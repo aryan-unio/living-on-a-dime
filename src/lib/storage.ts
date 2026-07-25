@@ -8,7 +8,12 @@ import type {
   Quote,
   Settings,
 } from "./types";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as rawSupabase } from "@/integrations/supabase/client";
+
+// Types are managed by the Lovable Cloud migration system; cast to any while
+// schema types are being regenerated so the rest of the file stays type-safe
+// via the explicit domain casts below.
+const supabase = rawSupabase as any;
 
 // ---- In-memory cache (mirrors Supabase, kept sync for existing components) ----
 

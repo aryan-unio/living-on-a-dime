@@ -359,22 +359,34 @@ function Settings() {
         </TabsContent>
 
         <TabsContent value="payment" className="mt-4">
-          <Card><CardContent className="grid grid-cols-1 gap-4 p-5">
-            {c.country === "India" ? (
-              <Field label="UPI ID">
-                <Input value={c.upiId} onChange={(e) => set("upiId", e.target.value)} placeholder="yourname@upi" />
-                <p className="mt-1 text-xs text-muted-foreground">Used to generate UPI QR codes on invoices.</p>
-              </Field>
-            ) : (
-              <div className="rounded-md border bg-slate-50 p-3 text-sm text-slate-600">
-                Payment QR codes are currently supported for UPI (India) only. More payment methods coming soon.
-              </div>
-            )}
-            <div className="flex justify-end border-t pt-4">
+          <Card><CardContent className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <h3 className="text-sm font-semibold">Bank / Payment Details</h3>
+              <p className="text-xs text-muted-foreground">
+                Shown in the "Payment Options" section of the invoice. Leave all fields blank to hide the section.
+              </p>
+            </div>
+            <Field label="Bank Name">
+              <Input value={c.bankName || ""} onChange={(e) => set("bankName", e.target.value)} placeholder="e.g. HDFC Bank" />
+            </Field>
+            <Field label="Account Holder Name">
+              <Input value={c.accountHolder || ""} onChange={(e) => set("accountHolder", e.target.value)} placeholder="Name on account" />
+            </Field>
+            <Field label="Account Number">
+              <Input value={c.accountNumber || ""} onChange={(e) => set("accountNumber", e.target.value)} placeholder="Bank account number" />
+            </Field>
+            <Field label="IFSC Code">
+              <Input value={c.ifsc || ""} onChange={(e) => set("ifsc", e.target.value.toUpperCase())} placeholder="e.g. HDFC0001234" />
+            </Field>
+            <Field label="UPI ID">
+              <Input value={c.upiId} onChange={(e) => set("upiId", e.target.value)} placeholder="yourname@upi" />
+            </Field>
+            <div className="md:col-span-2 flex justify-end border-t pt-4">
               <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={save}>Save Changes</Button>
             </div>
           </CardContent></Card>
         </TabsContent>
+
 
         <TabsContent value="data" className="mt-4">
           <Card><CardContent className="space-y-4 p-5">

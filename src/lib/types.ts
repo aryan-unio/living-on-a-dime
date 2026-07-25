@@ -24,6 +24,10 @@ export interface Company {
   fiscalYearStart: string;
   timezone: string;
   upiId: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  ifsc?: string;
   taxSystem?: string;   // computed key: india/us/uk/eu/canada/australia/other
 }
 

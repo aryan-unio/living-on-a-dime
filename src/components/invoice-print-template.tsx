@@ -2,7 +2,8 @@ import type { Company, Customer, Invoice } from "@/lib/types";
 import type { InvoiceTotals } from "@/lib/calc";
 import { formatDate, formatMoney, amountInWords } from "@/lib/format";
 import { getTaxSystem } from "@/lib/taxSystem";
-import { QRCodeSVG } from "qrcode.react";
+
+const BRAND = "#EA580C";
 
 export function InvoicePrintTemplate({
   invoice, company, customer, totals,
@@ -18,132 +19,264 @@ export function InvoicePrintTemplate({
   const taxSystem = isIndia
     ? baseTaxSystem
     : { ...baseTaxSystem, key: "other" as const, label: "Tax", showHSN: false };
-  const showUPI = isIndia && !!company.upiId && totals.balance > 0;
 
-  const upiLink = showUPI
-    ? `upi://pay?pa=${encodeURIComponent(company.upiId)}&pn=${encodeURIComponent(company.name)}&am=${totals.balance.toFixed(2)}&cu=INR&tn=${encodeURIComponent(invoice.number)}`
-    : "";
+  const paymentLines = buildPaymentLines(company);
+  const showPayments = paymentLines.length > 0;
+
+  const daysDiff = Math.max(
+    0,
+    Math.round(
+      (new Date(invoice.dueDate).getTime() - new Date(invoice.date).getTime()) /
+        86400000,
+    ),
+  );
+  const terms = daysDiff > 0 ? `Net ${daysDiff}` : "Due on Receipt";
+
+  const words = wordsOnly(totals.total, curr);
 
   return (
-    <div className="p-10 text-sm text-slate-800" style={{ minHeight: 800 }}>
-      <div className="flex items-start justify-between gap-6 border-b pb-6">
+    <div
+      className="bg-white p-10 text-[13px] text-slate-900"
+      style={{
+        minHeight: 800,
+        fontFamily: "Inter, system-ui, sans-serif",
+        WebkitPrintColorAdjust: "exact",
+        printColorAdjust: "exact",
+      }}
+    >
+      {/* HEADER */}
+      <div className="flex items-start justify-between gap-8">
         <div className="flex items-start gap-4">
           <CompanyLogo company={company} />
           <div>
-            <div className="text-2xl font-bold text-[#0F7B6C]">{company.name || "Your Company"}</div>
-            {company.tagline && <div className="text-xs text-muted-foreground">{company.tagline}</div>}
-            <div className="mt-2 text-xs text-slate-600">
-              {[company.street, company.city, company.state, company.pin].filter(Boolean).join(", ")}
-              {company.country && <><br />{company.country}</>}
-              {company.email && <><br />{company.email}</>}
-              {company.phone && <> · {company.phone}</>}
+            <div className="text-2xl font-bold leading-tight text-slate-900">
+              {company.name || "Your Company"}
+            </div>
+            {company.tagline && (
+              <div className="mt-0.5 text-xs text-slate-500">{company.tagline}</div>
+            )}
+            <div
+              className="mt-3 space-y-0.5 text-[12px] leading-relaxed"
+              style={{ color: BRAND }}
+            >
+              {[company.city, company.state, company.pin]
+                .filter(Boolean).length > 0 && (
+                <div>
+                  {[company.city, company.state, company.pin].filter(Boolean).join(", ")}
+                </div>
+              )}
+              {company.country && <div>{company.country}</div>}
+              {company.email && <div>{company.email}</div>}
+              {company.website && <div>{company.website}</div>}
             </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-xl font-semibold uppercase tracking-wide text-slate-700">{isIndia ? "Tax Invoice" : "Invoice"}</div>
-          <div className="mt-2 text-sm font-medium">{invoice.number}</div>
-          <div className="text-xs text-slate-500">Date: {formatDate(invoice.date)}</div>
-          <div className="text-xs text-slate-500">Due: {formatDate(invoice.dueDate)}</div>
-        </div>
-      </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-6">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-slate-500">Bill To</div>
-          <div className="mt-1 font-medium">{customer?.displayName || "—"}</div>
-          {customer?.companyName && <div>{customer.companyName}</div>}
-          <div className="text-xs text-slate-600">
-            {[customer?.city, customer?.state].filter(Boolean).join(", ")}
-            {customer?.email && <><br />{customer.email}</>}
+        <div className="text-right">
+          <div
+            className="font-bold uppercase leading-none text-slate-900"
+            style={{ fontSize: 40, letterSpacing: "0.02em" }}
+          >
+            TAX INVOICE
+          </div>
+          <div className="mt-2 text-sm font-semibold" style={{ color: BRAND }}>
+            # {invoice.number}
+          </div>
+          <div
+            className="mt-4 inline-block rounded px-4 py-2 text-right"
+            style={{ background: "#F8FAFC", minWidth: 200 }}
+          >
+            <div className="text-xs uppercase text-slate-500">Balance Due</div>
+            <div className="text-xl font-bold text-slate-900">
+              {formatMoney(totals.balance, curr)}
+            </div>
           </div>
         </div>
-        <div className="text-right text-xs text-slate-600">
-          {isIndia && <div>Place of Supply: <span className="font-medium text-slate-800">{customer?.state || "—"}</span></div>}
-          
+      </div>
+
+      {/* DIVIDER */}
+      <div className="mt-6 border-t border-slate-200" />
+
+      {/* META ROW */}
+      <div className="mt-4 flex justify-end">
+        <div className="w-72 space-y-1 text-[12px]">
+          <MetaRow label="Invoice Date :" value={formatDate(invoice.date)} />
+          <MetaRow label="Terms :" value={terms} />
+          <MetaRow label="Due Date :" value={formatDate(invoice.dueDate)} />
         </div>
       </div>
 
-      {/* Compliance block */}
-      <ComplianceBlock company={company} customer={customer} taxSystemKey={taxSystem.key} />
+      {/* BILL TO */}
+      <div className="mt-6">
+        <div className="text-[13px] font-bold text-slate-900">
+          {customer?.companyName || customer?.displayName || "—"}
+        </div>
+        {customer?.companyName && customer?.displayName && (
+          <div className="text-[12px] text-slate-600">{customer.displayName}</div>
+        )}
+        {(customer?.city || customer?.state) && (
+          <div className="text-[12px] text-slate-500">
+            {[customer?.city, customer?.state].filter(Boolean).join(", ")}
+          </div>
+        )}
+      </div>
 
-      <table className="mt-6 w-full text-sm">
+      {/* LINE ITEMS */}
+      <table className="mt-6 w-full border-collapse text-[12px]">
         <thead>
-          <tr className="bg-slate-100 text-xs uppercase text-slate-600">
-            <th className="px-3 py-2 text-left font-semibold">#</th>
-            <th className="px-3 py-2 text-left font-semibold">Item / Description</th>
-            {taxSystem.showHSN && <th className="px-3 py-2 text-left font-semibold">HSN/SAC</th>}
-            <th className="px-3 py-2 text-right font-semibold">Qty</th>
-            <th className="px-3 py-2 text-right font-semibold">Rate</th>
-            <th className="px-3 py-2 text-right font-semibold">{taxSystem.label} %</th>
-            <th className="px-3 py-2 text-right font-semibold">Amount</th>
+          <tr style={{ background: "#1F2A44", color: "#fff" }}>
+            <th className="px-3 py-2 text-left font-semibold w-8">#</th>
+            <th className="px-3 py-2 text-left font-semibold">Item &amp; Description</th>
+            <th className="px-3 py-2 text-right font-semibold w-20">Qty</th>
+            <th className="px-3 py-2 text-right font-semibold w-28">Rate</th>
+            <th className="px-3 py-2 text-right font-semibold w-28">Amount</th>
           </tr>
         </thead>
         <tbody>
-          {invoice.lineItems.map((li, i) => (
-            <tr key={li.id} className="border-b">
-              <td className="px-3 py-2">{i + 1}</td>
-              <td className="px-3 py-2">{li.description}</td>
-              {taxSystem.showHSN && <td className="px-3 py-2 text-slate-600">{li.hsnCode || "—"}</td>}
-              <td className="px-3 py-2 text-right">{li.qty}</td>
-              <td className="px-3 py-2 text-right">{formatMoney(li.rate, curr)}</td>
-              <td className="px-3 py-2 text-right">{li.taxRate}%</td>
-              <td className="px-3 py-2 text-right font-medium">{formatMoney(li.qty * li.rate, curr)}</td>
-            </tr>
-          ))}
+          {invoice.lineItems.map((li, i) => {
+            const hasQtyRate = (li.qty ?? 0) > 0 && (li.rate ?? 0) > 0;
+            const amt = (li.qty || 0) * (li.rate || 0);
+            return (
+              <tr key={li.id} className="border-b border-slate-200 align-top">
+                <td className="px-3 py-3 text-slate-700">{i + 1}</td>
+                <td className="px-3 py-3 text-slate-900">
+                  {li.description || "—"}
+                  {taxSystem.showHSN && li.hsnCode && (
+                    <div className="text-[11px] text-slate-500">HSN/SAC: {li.hsnCode}</div>
+                  )}
+                </td>
+                <td className="px-3 py-3 text-right text-slate-700">
+                  {hasQtyRate ? formatQty(li.qty) : ""}
+                </td>
+                <td className="px-3 py-3 text-right text-slate-700">
+                  {hasQtyRate ? formatMoney(li.rate, curr) : ""}
+                </td>
+                <td className="px-3 py-3 text-right font-medium text-slate-900">
+                  {formatMoney(amt || li.rate || 0, curr)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
+      {/* TOTALS */}
       <div className="mt-6 flex justify-end">
-        <div className="w-72 space-y-1 text-sm">
-          <Row label="Subtotal" value={formatMoney(totals.subtotal, curr)} />
-          {totals.discountAmount > 0 && <Row label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />}
-          <Row label="Taxable Amount" value={formatMoney(totals.taxableAmount, curr)} />
-          <PrintTaxRows totals={totals} curr={curr} treatment={customer?.gstTreatment} />
-          {totals.adjustment !== 0 && <Row label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />}
-          <div className="mt-2 flex items-center justify-between border-t pt-2 text-base font-semibold">
-            <span>Total</span><span>{formatMoney(totals.total, curr)}</span>
-          </div>
-          {totals.paid > 0 && <Row label="Paid" value={`− ${formatMoney(totals.paid, curr)}`} />}
-          {totals.balance > 0 && (
-            <div className="flex items-center justify-between text-sm font-semibold text-[#DC2626]">
-              <span>Balance Due</span><span>{formatMoney(totals.balance, curr)}</span>
+        <div className="w-80">
+          <div className="border-t border-slate-300 pt-3 space-y-1.5 text-[12px]">
+            <Row label="Sub Total" value={formatMoney(totals.subtotal, curr)} />
+            {totals.discountAmount > 0 && (
+              <Row label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />
+            )}
+            {totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax > 0 && (
+              <Row label={taxSystem.label} value={formatMoney(
+                totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax, curr,
+              )} />
+            )}
+            {totals.adjustment !== 0 && (
+              <Row label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />
+            )}
+            <div className="flex items-center justify-between border-t border-slate-300 pt-2 text-[13px] font-bold text-slate-900">
+              <span>Total</span>
+              <span>{formatMoney(totals.total, curr)}</span>
             </div>
-          )}
+            <div
+              className="mt-1 flex items-center justify-between rounded px-2 py-2 text-[13px] font-bold text-slate-900"
+              style={{ background: "#F1F5F9" }}
+            >
+              <span>Balance Due</span>
+              <span>{formatMoney(totals.balance, curr)}</span>
+            </div>
+          </div>
+          <div className="mt-3 text-right text-[11px] italic text-slate-600">
+            Total In Words: {words} /-
+          </div>
         </div>
       </div>
 
-      <div className="mt-4 text-xs italic text-slate-600">
-        {amountInWords(totals.total, curr)}
+      {/* NOTES + PAYMENT OPTIONS */}
+      <div className="mt-10 space-y-6">
+        {invoice.notes && (
+          <div className="text-[12px] text-slate-700">
+            <div className="whitespace-pre-wrap">{invoice.notes}</div>
+          </div>
+        )}
+        {!invoice.notes && (
+          <div className="text-[12px] text-slate-700">Thanks for your business.</div>
+        )}
+
+        {showPayments && (
+          <div>
+            <div
+              className="text-[13px] font-semibold"
+              style={{ color: BRAND }}
+            >
+              Payment Options
+            </div>
+            <div className="mt-1 space-y-0.5 text-[12px] text-slate-700">
+              {paymentLines.map((l) => (
+                <div key={l.label}>
+                  <span>{l.label} :- </span>
+                  <span className="text-slate-900">{l.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {invoice.terms && (
+          <div className="text-[11px] text-slate-500">
+            <div className="mb-0.5 font-semibold uppercase text-slate-500">Terms &amp; Conditions</div>
+            <div className="whitespace-pre-wrap">{invoice.terms}</div>
+          </div>
+        )}
       </div>
 
-      {showUPI && (
-        <div className="mt-6 flex justify-end">
-          <div className="text-center">
-            <QRCodeSVG value={upiLink} size={80} fgColor="#0F7B6C" />
-            <div className="mt-1 text-xs text-slate-500">Scan to pay via UPI</div>
-          </div>
-        </div>
-      )}
-
-      {(invoice.notes || invoice.terms) && (
-        <div className="mt-10 grid grid-cols-2 gap-6 border-t pt-6 text-xs text-slate-600">
-          {invoice.notes && (
-            <div>
-              <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Notes</div>
-              <div className="whitespace-pre-wrap">{invoice.notes}</div>
-            </div>
-          )}
-          {invoice.terms && (
-            <div>
-              <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Terms &amp; Conditions</div>
-              <div className="whitespace-pre-wrap">{invoice.terms}</div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* FOOTER */}
+      <div className="mt-12 border-t border-slate-200 pt-2 text-right text-[11px] text-slate-500">
+        1
+      </div>
     </div>
   );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="font-medium" style={{ color: BRAND }}>{label}</span>
+      <span className="text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-slate-600">{label}</span>
+      <span className="text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function formatQty(q: number): string {
+  if (Number.isInteger(q)) return String(q);
+  return q.toFixed(2);
+}
+
+function buildPaymentLines(company: Company): { label: string; value: string }[] {
+  const out: { label: string; value: string }[] = [];
+  if (company.bankName) out.push({ label: "Bank Name", value: company.bankName });
+  if (company.accountHolder) out.push({ label: "Name", value: company.accountHolder });
+  if (company.accountNumber) out.push({ label: "A/C No", value: company.accountNumber });
+  if (company.ifsc) out.push({ label: "IFSC", value: company.ifsc });
+  if (company.upiId) out.push({ label: "UPI ID", value: company.upiId });
+  return out;
+}
+
+function wordsOnly(amount: number, currency: string): string {
+  // Strip the currency prefix from amountInWords: "Rupees Seventy Thousand Only" -> "Seventy Thousand Only"
+  const s = amountInWords(amount, currency);
+  return s.replace(/^(Rupees|US Dollars|Euros|Pounds Sterling|[A-Z]{3})\s+/i, "");
 }
 
 function CompanyLogo({ company }: { company: Company }) {
@@ -154,7 +287,7 @@ function CompanyLogo({ company }: { company: Company }) {
         src={logo}
         alt={`${company.name || "Company"} logo`}
         crossOrigin="anonymous"
-        style={{ maxHeight: 80, maxWidth: 160, objectFit: "contain" }}
+        style={{ maxHeight: 96, maxWidth: 180, objectFit: "contain" }}
       />
     );
   }
@@ -163,76 +296,14 @@ function CompanyLogo({ company }: { company: Company }) {
   const inits = ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "U";
   return (
     <div
-      style={{ height: 64, width: 64, borderRadius: 12, background: "#0F7B6C", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 22 }}
+      style={{
+        height: 72, width: 72, borderRadius: 12,
+        background: BRAND, color: "#fff",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontWeight: 700, fontSize: 24,
+      }}
     >
       {inits}
-    </div>
-  );
-}
-
-function ComplianceBlock({ company, customer, taxSystemKey }: { company: Company; customer?: Customer; taxSystemKey: string }) {
-  const lines: string[] = [];
-  if (taxSystemKey === "india") {
-    const a: string[] = [];
-    if (company.gst) a.push(`GSTIN: ${company.gst}`);
-    if (company.pan) a.push(`PAN: ${company.pan}`);
-    if (a.length) lines.push(a.join(" | "));
-    const b: string[] = [];
-    if (customer?.gstin) b.push(`Customer GSTIN: ${customer.gstin}`);
-    if (customer?.state) b.push(`Place of Supply: ${customer.state}`);
-    if (b.length) lines.push(b.join(" | "));
-  } else if (taxSystemKey === "uk" || taxSystemKey === "eu") {
-    if (company.vatNumber) lines.push(`VAT Reg No: ${company.vatNumber}`);
-    if (customer?.vatNumber) lines.push(`Customer VAT No: ${customer.vatNumber}`);
-  } else if (taxSystemKey === "us") {
-    if (company.ein) lines.push(`EIN: ${company.ein}`);
-    if (customer?.ein) lines.push(`Customer EIN: ${customer.ein}`);
-  } else if (taxSystemKey === "australia") {
-    if (company.abn) lines.push(`ABN: ${company.abn}`);
-    if (customer?.abn) lines.push(`Customer ABN: ${customer.abn}`);
-  } else if (taxSystemKey === "canada") {
-    if (company.bn) lines.push(`BN: ${company.bn}`);
-    if (customer?.bn) lines.push(`Customer BN: ${customer.bn}`);
-  }
-  if (!lines.length) return null;
-  return (
-    <div className="mt-4 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-700">
-      {lines.map((l, i) => <div key={i}>{l}</div>)}
-    </div>
-  );
-}
-
-function PrintTaxRows({ totals, curr, treatment }: { totals: InvoiceTotals; curr: string; treatment?: string }) {
-  const sys = totals.systemKey;
-  if (sys === "india") {
-    if (treatment === "overseas") return <Row label="Export (0%)" value={formatMoney(0, curr)} />;
-    if (totals.igst > 0) return <Row label="IGST" value={formatMoney(totals.igst, curr)} />;
-    return (
-      <>
-        <Row label="CGST" value={formatMoney(totals.cgst, curr)} />
-        <Row label="SGST" value={formatMoney(totals.sgst, curr)} />
-      </>
-    );
-  }
-  if (sys === "canada") {
-    return (
-      <>
-        {totals.gst > 0 && <Row label="GST (5%)" value={formatMoney(totals.gst, curr)} />}
-        {totals.pst > 0 && <Row label="PST" value={formatMoney(totals.pst, curr)} />}
-        {totals.hst > 0 && <Row label="HST" value={formatMoney(totals.hst, curr)} />}
-      </>
-    );
-  }
-  if (sys === "us") return <Row label="Sales Tax" value={formatMoney(totals.salesTax, curr)} />;
-  const label = sys === "australia" ? "GST" : sys === "other" ? "Tax" : "VAT";
-  return <Row label={label} value={formatMoney(totals.taxAmount, curr)} />;
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-slate-600">{label}</span>
-      <span className="font-medium">{value}</span>
     </div>
   );
 }

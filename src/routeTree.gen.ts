@@ -9,38 +9,525 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TimesheetRouteImport } from './routes/timesheet'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as RecurringRouteImport } from './routes/recurring'
+import { Route as QuotesRouteImport } from './routes/quotes'
+import { Route as ItemsRouteImport } from './routes/items'
+import { Route as InvoicesRouteImport } from './routes/invoices'
+import { Route as ExpensesRouteImport } from './routes/expenses'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReportsIndexRouteImport } from './routes/reports.index'
+import { Route as QuotesIndexRouteImport } from './routes/quotes.index'
+import { Route as InvoicesIndexRouteImport } from './routes/invoices.index'
+import { Route as ExpensesIndexRouteImport } from './routes/expenses.index'
+import { Route as CustomersIndexRouteImport } from './routes/customers.index'
+import { Route as ReportsSalesByItemRouteImport } from './routes/reports.sales-by-item'
+import { Route as ReportsSalesByCustomerRouteImport } from './routes/reports.sales-by-customer'
+import { Route as ReportsPaymentsReceivedRouteImport } from './routes/reports.payments-received'
+import { Route as ReportsInvoiceDetailsRouteImport } from './routes/reports.invoice-details'
+import { Route as ReportsExpenseDetailsRouteImport } from './routes/reports.expense-details'
+import { Route as ReportsExpenseByCategoryRouteImport } from './routes/reports.expense-by-category'
+import { Route as ReportsCustomerBalancesRouteImport } from './routes/reports.customer-balances'
+import { Route as ReportsAgingRouteImport } from './routes/reports.aging'
+import { Route as QuotesNewRouteImport } from './routes/quotes.new'
+import { Route as QuotesIdRouteImport } from './routes/quotes.$id'
+import { Route as InvoicesNewRouteImport } from './routes/invoices.new'
+import { Route as InvoicesIdRouteImport } from './routes/invoices.$id'
+import { Route as ExpensesNewRouteImport } from './routes/expenses.new'
+import { Route as CustomersNewRouteImport } from './routes/customers.new'
+import { Route as CustomersIdRouteImport } from './routes/customers.$id'
+import { Route as InvoicesIdEditRouteImport } from './routes/invoices.$id.edit'
 
+const TimesheetRoute = TimesheetRouteImport.update({
+  id: '/timesheet',
+  path: '/timesheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecurringRoute = RecurringRouteImport.update({
+  id: '/recurring',
+  path: '/recurring',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesRoute = QuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsRoute = ItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesRoute = InvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpensesRoute = ExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportsIndexRoute = ReportsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const QuotesIndexRoute = QuotesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => QuotesRoute,
+} as any)
+const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const ExpensesIndexRoute = ExpensesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExpensesRoute,
+} as any)
+const CustomersIndexRoute = CustomersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CustomersRoute,
+} as any)
+const ReportsSalesByItemRoute = ReportsSalesByItemRouteImport.update({
+  id: '/sales-by-item',
+  path: '/sales-by-item',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsSalesByCustomerRoute = ReportsSalesByCustomerRouteImport.update({
+  id: '/sales-by-customer',
+  path: '/sales-by-customer',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsPaymentsReceivedRoute = ReportsPaymentsReceivedRouteImport.update({
+  id: '/payments-received',
+  path: '/payments-received',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsInvoiceDetailsRoute = ReportsInvoiceDetailsRouteImport.update({
+  id: '/invoice-details',
+  path: '/invoice-details',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsExpenseDetailsRoute = ReportsExpenseDetailsRouteImport.update({
+  id: '/expense-details',
+  path: '/expense-details',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsExpenseByCategoryRoute =
+  ReportsExpenseByCategoryRouteImport.update({
+    id: '/expense-by-category',
+    path: '/expense-by-category',
+    getParentRoute: () => ReportsRoute,
+  } as any)
+const ReportsCustomerBalancesRoute = ReportsCustomerBalancesRouteImport.update({
+  id: '/customer-balances',
+  path: '/customer-balances',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const ReportsAgingRoute = ReportsAgingRouteImport.update({
+  id: '/aging',
+  path: '/aging',
+  getParentRoute: () => ReportsRoute,
+} as any)
+const QuotesNewRoute = QuotesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => QuotesRoute,
+} as any)
+const QuotesIdRoute = QuotesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => QuotesRoute,
+} as any)
+const InvoicesNewRoute = InvoicesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesIdRoute = InvoicesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const ExpensesNewRoute = ExpensesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ExpensesRoute,
+} as any)
+const CustomersNewRoute = CustomersNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CustomersRoute,
+} as any)
+const CustomersIdRoute = CustomersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CustomersRoute,
+} as any)
+const InvoicesIdEditRoute = InvoicesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => InvoicesIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/customers': typeof CustomersRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/expenses': typeof ExpensesRouteWithChildren
+  '/invoices': typeof InvoicesRouteWithChildren
+  '/items': typeof ItemsRoute
+  '/quotes': typeof QuotesRouteWithChildren
+  '/recurring': typeof RecurringRoute
+  '/reports': typeof ReportsRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/timesheet': typeof TimesheetRoute
+  '/customers/$id': typeof CustomersIdRoute
+  '/customers/new': typeof CustomersNewRoute
+  '/expenses/new': typeof ExpensesNewRoute
+  '/invoices/$id': typeof InvoicesIdRouteWithChildren
+  '/invoices/new': typeof InvoicesNewRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/quotes/new': typeof QuotesNewRoute
+  '/reports/aging': typeof ReportsAgingRoute
+  '/reports/customer-balances': typeof ReportsCustomerBalancesRoute
+  '/reports/expense-by-category': typeof ReportsExpenseByCategoryRoute
+  '/reports/expense-details': typeof ReportsExpenseDetailsRoute
+  '/reports/invoice-details': typeof ReportsInvoiceDetailsRoute
+  '/reports/payments-received': typeof ReportsPaymentsReceivedRoute
+  '/reports/sales-by-customer': typeof ReportsSalesByCustomerRoute
+  '/reports/sales-by-item': typeof ReportsSalesByItemRoute
+  '/customers/': typeof CustomersIndexRoute
+  '/expenses/': typeof ExpensesIndexRoute
+  '/invoices/': typeof InvoicesIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
+  '/reports/': typeof ReportsIndexRoute
+  '/invoices/$id/edit': typeof InvoicesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/items': typeof ItemsRoute
+  '/recurring': typeof RecurringRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/timesheet': typeof TimesheetRoute
+  '/customers/$id': typeof CustomersIdRoute
+  '/customers/new': typeof CustomersNewRoute
+  '/expenses/new': typeof ExpensesNewRoute
+  '/invoices/$id': typeof InvoicesIdRouteWithChildren
+  '/invoices/new': typeof InvoicesNewRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/quotes/new': typeof QuotesNewRoute
+  '/reports/aging': typeof ReportsAgingRoute
+  '/reports/customer-balances': typeof ReportsCustomerBalancesRoute
+  '/reports/expense-by-category': typeof ReportsExpenseByCategoryRoute
+  '/reports/expense-details': typeof ReportsExpenseDetailsRoute
+  '/reports/invoice-details': typeof ReportsInvoiceDetailsRoute
+  '/reports/payments-received': typeof ReportsPaymentsReceivedRoute
+  '/reports/sales-by-customer': typeof ReportsSalesByCustomerRoute
+  '/reports/sales-by-item': typeof ReportsSalesByItemRoute
+  '/customers': typeof CustomersIndexRoute
+  '/expenses': typeof ExpensesIndexRoute
+  '/invoices': typeof InvoicesIndexRoute
+  '/quotes': typeof QuotesIndexRoute
+  '/reports': typeof ReportsIndexRoute
+  '/invoices/$id/edit': typeof InvoicesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/customers': typeof CustomersRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/expenses': typeof ExpensesRouteWithChildren
+  '/invoices': typeof InvoicesRouteWithChildren
+  '/items': typeof ItemsRoute
+  '/quotes': typeof QuotesRouteWithChildren
+  '/recurring': typeof RecurringRoute
+  '/reports': typeof ReportsRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/timesheet': typeof TimesheetRoute
+  '/customers/$id': typeof CustomersIdRoute
+  '/customers/new': typeof CustomersNewRoute
+  '/expenses/new': typeof ExpensesNewRoute
+  '/invoices/$id': typeof InvoicesIdRouteWithChildren
+  '/invoices/new': typeof InvoicesNewRoute
+  '/quotes/$id': typeof QuotesIdRoute
+  '/quotes/new': typeof QuotesNewRoute
+  '/reports/aging': typeof ReportsAgingRoute
+  '/reports/customer-balances': typeof ReportsCustomerBalancesRoute
+  '/reports/expense-by-category': typeof ReportsExpenseByCategoryRoute
+  '/reports/expense-details': typeof ReportsExpenseDetailsRoute
+  '/reports/invoice-details': typeof ReportsInvoiceDetailsRoute
+  '/reports/payments-received': typeof ReportsPaymentsReceivedRoute
+  '/reports/sales-by-customer': typeof ReportsSalesByCustomerRoute
+  '/reports/sales-by-item': typeof ReportsSalesByItemRoute
+  '/customers/': typeof CustomersIndexRoute
+  '/expenses/': typeof ExpensesIndexRoute
+  '/invoices/': typeof InvoicesIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
+  '/reports/': typeof ReportsIndexRoute
+  '/invoices/$id/edit': typeof InvoicesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/customers'
+    | '/dashboard'
+    | '/expenses'
+    | '/invoices'
+    | '/items'
+    | '/quotes'
+    | '/recurring'
+    | '/reports'
+    | '/reset-password'
+    | '/settings'
+    | '/timesheet'
+    | '/customers/$id'
+    | '/customers/new'
+    | '/expenses/new'
+    | '/invoices/$id'
+    | '/invoices/new'
+    | '/quotes/$id'
+    | '/quotes/new'
+    | '/reports/aging'
+    | '/reports/customer-balances'
+    | '/reports/expense-by-category'
+    | '/reports/expense-details'
+    | '/reports/invoice-details'
+    | '/reports/payments-received'
+    | '/reports/sales-by-customer'
+    | '/reports/sales-by-item'
+    | '/customers/'
+    | '/expenses/'
+    | '/invoices/'
+    | '/quotes/'
+    | '/reports/'
+    | '/invoices/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/items'
+    | '/recurring'
+    | '/reset-password'
+    | '/settings'
+    | '/timesheet'
+    | '/customers/$id'
+    | '/customers/new'
+    | '/expenses/new'
+    | '/invoices/$id'
+    | '/invoices/new'
+    | '/quotes/$id'
+    | '/quotes/new'
+    | '/reports/aging'
+    | '/reports/customer-balances'
+    | '/reports/expense-by-category'
+    | '/reports/expense-details'
+    | '/reports/invoice-details'
+    | '/reports/payments-received'
+    | '/reports/sales-by-customer'
+    | '/reports/sales-by-item'
+    | '/customers'
+    | '/expenses'
+    | '/invoices'
+    | '/quotes'
+    | '/reports'
+    | '/invoices/$id/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/customers'
+    | '/dashboard'
+    | '/expenses'
+    | '/invoices'
+    | '/items'
+    | '/quotes'
+    | '/recurring'
+    | '/reports'
+    | '/reset-password'
+    | '/settings'
+    | '/timesheet'
+    | '/customers/$id'
+    | '/customers/new'
+    | '/expenses/new'
+    | '/invoices/$id'
+    | '/invoices/new'
+    | '/quotes/$id'
+    | '/quotes/new'
+    | '/reports/aging'
+    | '/reports/customer-balances'
+    | '/reports/expense-by-category'
+    | '/reports/expense-details'
+    | '/reports/invoice-details'
+    | '/reports/payments-received'
+    | '/reports/sales-by-customer'
+    | '/reports/sales-by-item'
+    | '/customers/'
+    | '/expenses/'
+    | '/invoices/'
+    | '/quotes/'
+    | '/reports/'
+    | '/invoices/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  CustomersRoute: typeof CustomersRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
+  ExpensesRoute: typeof ExpensesRouteWithChildren
+  InvoicesRoute: typeof InvoicesRouteWithChildren
+  ItemsRoute: typeof ItemsRoute
+  QuotesRoute: typeof QuotesRouteWithChildren
+  RecurringRoute: typeof RecurringRoute
+  ReportsRoute: typeof ReportsRouteWithChildren
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
+  TimesheetRoute: typeof TimesheetRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/timesheet': {
+      id: '/timesheet'
+      path: '/timesheet'
+      fullPath: '/timesheet'
+      preLoaderRoute: typeof TimesheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recurring': {
+      id: '/recurring'
+      path: '/recurring'
+      fullPath: '/recurring'
+      preLoaderRoute: typeof RecurringRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes': {
+      id: '/quotes'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof QuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items': {
+      id: '/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof ItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices': {
+      id: '/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof InvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/expenses': {
+      id: '/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof ExpensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +535,270 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reports/': {
+      id: '/reports/'
+      path: '/'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof ReportsIndexRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/quotes/': {
+      id: '/quotes/'
+      path: '/'
+      fullPath: '/quotes/'
+      preLoaderRoute: typeof QuotesIndexRouteImport
+      parentRoute: typeof QuotesRoute
+    }
+    '/invoices/': {
+      id: '/invoices/'
+      path: '/'
+      fullPath: '/invoices/'
+      preLoaderRoute: typeof InvoicesIndexRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/expenses/': {
+      id: '/expenses/'
+      path: '/'
+      fullPath: '/expenses/'
+      preLoaderRoute: typeof ExpensesIndexRouteImport
+      parentRoute: typeof ExpensesRoute
+    }
+    '/customers/': {
+      id: '/customers/'
+      path: '/'
+      fullPath: '/customers/'
+      preLoaderRoute: typeof CustomersIndexRouteImport
+      parentRoute: typeof CustomersRoute
+    }
+    '/reports/sales-by-item': {
+      id: '/reports/sales-by-item'
+      path: '/sales-by-item'
+      fullPath: '/reports/sales-by-item'
+      preLoaderRoute: typeof ReportsSalesByItemRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/sales-by-customer': {
+      id: '/reports/sales-by-customer'
+      path: '/sales-by-customer'
+      fullPath: '/reports/sales-by-customer'
+      preLoaderRoute: typeof ReportsSalesByCustomerRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/payments-received': {
+      id: '/reports/payments-received'
+      path: '/payments-received'
+      fullPath: '/reports/payments-received'
+      preLoaderRoute: typeof ReportsPaymentsReceivedRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/invoice-details': {
+      id: '/reports/invoice-details'
+      path: '/invoice-details'
+      fullPath: '/reports/invoice-details'
+      preLoaderRoute: typeof ReportsInvoiceDetailsRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/expense-details': {
+      id: '/reports/expense-details'
+      path: '/expense-details'
+      fullPath: '/reports/expense-details'
+      preLoaderRoute: typeof ReportsExpenseDetailsRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/expense-by-category': {
+      id: '/reports/expense-by-category'
+      path: '/expense-by-category'
+      fullPath: '/reports/expense-by-category'
+      preLoaderRoute: typeof ReportsExpenseByCategoryRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/customer-balances': {
+      id: '/reports/customer-balances'
+      path: '/customer-balances'
+      fullPath: '/reports/customer-balances'
+      preLoaderRoute: typeof ReportsCustomerBalancesRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/reports/aging': {
+      id: '/reports/aging'
+      path: '/aging'
+      fullPath: '/reports/aging'
+      preLoaderRoute: typeof ReportsAgingRouteImport
+      parentRoute: typeof ReportsRoute
+    }
+    '/quotes/new': {
+      id: '/quotes/new'
+      path: '/new'
+      fullPath: '/quotes/new'
+      preLoaderRoute: typeof QuotesNewRouteImport
+      parentRoute: typeof QuotesRoute
+    }
+    '/quotes/$id': {
+      id: '/quotes/$id'
+      path: '/$id'
+      fullPath: '/quotes/$id'
+      preLoaderRoute: typeof QuotesIdRouteImport
+      parentRoute: typeof QuotesRoute
+    }
+    '/invoices/new': {
+      id: '/invoices/new'
+      path: '/new'
+      fullPath: '/invoices/new'
+      preLoaderRoute: typeof InvoicesNewRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/$id': {
+      id: '/invoices/$id'
+      path: '/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof InvoicesIdRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/expenses/new': {
+      id: '/expenses/new'
+      path: '/new'
+      fullPath: '/expenses/new'
+      preLoaderRoute: typeof ExpensesNewRouteImport
+      parentRoute: typeof ExpensesRoute
+    }
+    '/customers/new': {
+      id: '/customers/new'
+      path: '/new'
+      fullPath: '/customers/new'
+      preLoaderRoute: typeof CustomersNewRouteImport
+      parentRoute: typeof CustomersRoute
+    }
+    '/customers/$id': {
+      id: '/customers/$id'
+      path: '/$id'
+      fullPath: '/customers/$id'
+      preLoaderRoute: typeof CustomersIdRouteImport
+      parentRoute: typeof CustomersRoute
+    }
+    '/invoices/$id/edit': {
+      id: '/invoices/$id/edit'
+      path: '/edit'
+      fullPath: '/invoices/$id/edit'
+      preLoaderRoute: typeof InvoicesIdEditRouteImport
+      parentRoute: typeof InvoicesIdRoute
+    }
   }
 }
 
+interface CustomersRouteChildren {
+  CustomersIdRoute: typeof CustomersIdRoute
+  CustomersNewRoute: typeof CustomersNewRoute
+  CustomersIndexRoute: typeof CustomersIndexRoute
+}
+
+const CustomersRouteChildren: CustomersRouteChildren = {
+  CustomersIdRoute: CustomersIdRoute,
+  CustomersNewRoute: CustomersNewRoute,
+  CustomersIndexRoute: CustomersIndexRoute,
+}
+
+const CustomersRouteWithChildren = CustomersRoute._addFileChildren(
+  CustomersRouteChildren,
+)
+
+interface ExpensesRouteChildren {
+  ExpensesNewRoute: typeof ExpensesNewRoute
+  ExpensesIndexRoute: typeof ExpensesIndexRoute
+}
+
+const ExpensesRouteChildren: ExpensesRouteChildren = {
+  ExpensesNewRoute: ExpensesNewRoute,
+  ExpensesIndexRoute: ExpensesIndexRoute,
+}
+
+const ExpensesRouteWithChildren = ExpensesRoute._addFileChildren(
+  ExpensesRouteChildren,
+)
+
+interface InvoicesIdRouteChildren {
+  InvoicesIdEditRoute: typeof InvoicesIdEditRoute
+}
+
+const InvoicesIdRouteChildren: InvoicesIdRouteChildren = {
+  InvoicesIdEditRoute: InvoicesIdEditRoute,
+}
+
+const InvoicesIdRouteWithChildren = InvoicesIdRoute._addFileChildren(
+  InvoicesIdRouteChildren,
+)
+
+interface InvoicesRouteChildren {
+  InvoicesIdRoute: typeof InvoicesIdRouteWithChildren
+  InvoicesNewRoute: typeof InvoicesNewRoute
+  InvoicesIndexRoute: typeof InvoicesIndexRoute
+}
+
+const InvoicesRouteChildren: InvoicesRouteChildren = {
+  InvoicesIdRoute: InvoicesIdRouteWithChildren,
+  InvoicesNewRoute: InvoicesNewRoute,
+  InvoicesIndexRoute: InvoicesIndexRoute,
+}
+
+const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
+  InvoicesRouteChildren,
+)
+
+interface QuotesRouteChildren {
+  QuotesIdRoute: typeof QuotesIdRoute
+  QuotesNewRoute: typeof QuotesNewRoute
+  QuotesIndexRoute: typeof QuotesIndexRoute
+}
+
+const QuotesRouteChildren: QuotesRouteChildren = {
+  QuotesIdRoute: QuotesIdRoute,
+  QuotesNewRoute: QuotesNewRoute,
+  QuotesIndexRoute: QuotesIndexRoute,
+}
+
+const QuotesRouteWithChildren =
+  QuotesRoute._addFileChildren(QuotesRouteChildren)
+
+interface ReportsRouteChildren {
+  ReportsAgingRoute: typeof ReportsAgingRoute
+  ReportsCustomerBalancesRoute: typeof ReportsCustomerBalancesRoute
+  ReportsExpenseByCategoryRoute: typeof ReportsExpenseByCategoryRoute
+  ReportsExpenseDetailsRoute: typeof ReportsExpenseDetailsRoute
+  ReportsInvoiceDetailsRoute: typeof ReportsInvoiceDetailsRoute
+  ReportsPaymentsReceivedRoute: typeof ReportsPaymentsReceivedRoute
+  ReportsSalesByCustomerRoute: typeof ReportsSalesByCustomerRoute
+  ReportsSalesByItemRoute: typeof ReportsSalesByItemRoute
+  ReportsIndexRoute: typeof ReportsIndexRoute
+}
+
+const ReportsRouteChildren: ReportsRouteChildren = {
+  ReportsAgingRoute: ReportsAgingRoute,
+  ReportsCustomerBalancesRoute: ReportsCustomerBalancesRoute,
+  ReportsExpenseByCategoryRoute: ReportsExpenseByCategoryRoute,
+  ReportsExpenseDetailsRoute: ReportsExpenseDetailsRoute,
+  ReportsInvoiceDetailsRoute: ReportsInvoiceDetailsRoute,
+  ReportsPaymentsReceivedRoute: ReportsPaymentsReceivedRoute,
+  ReportsSalesByCustomerRoute: ReportsSalesByCustomerRoute,
+  ReportsSalesByItemRoute: ReportsSalesByItemRoute,
+  ReportsIndexRoute: ReportsIndexRoute,
+}
+
+const ReportsRouteWithChildren =
+  ReportsRoute._addFileChildren(ReportsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  CustomersRoute: CustomersRouteWithChildren,
+  DashboardRoute: DashboardRoute,
+  ExpensesRoute: ExpensesRouteWithChildren,
+  InvoicesRoute: InvoicesRouteWithChildren,
+  ItemsRoute: ItemsRoute,
+  QuotesRoute: QuotesRouteWithChildren,
+  RecurringRoute: RecurringRoute,
+  ReportsRoute: ReportsRouteWithChildren,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
+  TimesheetRoute: TimesheetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

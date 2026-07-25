@@ -36,10 +36,18 @@ export function InvoiceEditor({
   const customers = useStore(() => store.getCustomers());
   const company = useStore(() => store.getCompany());
   const items = useStore(() => store.getItems());
+  const allInvoices = useStore(() => store.getInvoices());
   const [inv, setInv] = useState<Invoice>({
     ...initial,
     currency: initial.currency || company.currency || "INR",
   });
+  const numberError = (() => {
+    const n = inv.number.trim();
+    if (!n) return "Invoice number is required";
+    const dup = allInvoices.some((x) => x.id !== inv.id && x.number.trim().toLowerCase() === n.toLowerCase());
+    if (dup) return "This invoice number already exists. Please use a different number.";
+    return "";
+  })();
 
   const customer = customers.find((c) => c.id === inv.customerId);
   const curr: Currency = inv.currency || company.currency || "INR";

@@ -36,10 +36,18 @@ export function InvoiceEditor({
   const customers = useStore(() => store.getCustomers());
   const company = useStore(() => store.getCompany());
   const items = useStore(() => store.getItems());
+  const allInvoices = useStore(() => store.getInvoices());
   const [inv, setInv] = useState<Invoice>({
     ...initial,
     currency: initial.currency || company.currency || "INR",
   });
+  const numberError = (() => {
+    const n = inv.number.trim();
+    if (!n) return "Invoice number is required";
+    const dup = allInvoices.some((x) => x.id !== inv.id && x.number.trim().toLowerCase() === n.toLowerCase());
+    if (dup) return "This invoice number already exists. Please use a different number.";
+    return "";
+  })();
 
   const customer = customers.find((c) => c.id === inv.customerId);
   const curr: Currency = inv.currency || company.currency || "INR";
@@ -108,13 +116,13 @@ export function InvoiceEditor({
         <ArrowLeft size={16} /> Back
       </Button>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{inv.number}</h1>
+        <h1 className="text-2xl font-semibold">{inv.number || "New Invoice"}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onSave(withSnapshot(inv), "draft")}>Save Draft</Button>
+          <Button variant="outline" onClick={() => onSave(withSnapshot(inv), "draft")} disabled={!!numberError}>Save Draft</Button>
           <Button
             className="bg-[var(--brand)] hover:bg-[var(--brand)]/90 text-white"
             onClick={() => onSave(withSnapshot(inv), "send")}
-            disabled={!inv.customerId || inv.lineItems.length === 0}
+            disabled={!inv.customerId || inv.lineItems.length === 0 || !!numberError}
           >
             Save &amp; Send
           </Button>
@@ -125,8 +133,25 @@ export function InvoiceEditor({
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardContent className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <Label>Invoice #</Label>
+                <Input
+                  value={inv.number}
+                  onChange={(e) => setInv({ ...inv, number: e.target.value })}
+                  className={numberError ? "border-red-500" : ""}
+                  placeholder="INV-0001"
+                />
+                {numberError ? (
+                  <p className="mt-1 text-xs text-red-500">{numberError}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    e.g. INV-0001, 2026-001, or any custom number
+                  </p>
+                )}
+              </div>
               <div>
                 <Label>Customer</Label>
+
                 <Select value={inv.customerId} onValueChange={(v) => setInv({ ...inv, customerId: v })}>
                   <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
                   <SelectContent>

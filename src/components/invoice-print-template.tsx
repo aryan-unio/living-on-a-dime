@@ -50,11 +50,14 @@ export function InvoicePrintTemplate({
 
   return (
     <div
-      className="invoice-print-area bg-white text-[13px] text-slate-900"
+      className="invoice-print-area text-[13px]"
       style={{
         padding: 40,
         minHeight: 800,
         fontFamily: "Inter, system-ui, sans-serif",
+        background: "#ffffff",
+        color: "#0f172a",
+        colorScheme: "light",
         WebkitPrintColorAdjust: "exact",
         printColorAdjust: "exact",
       }}
@@ -110,11 +113,12 @@ export function InvoicePrintTemplate({
           <div style={{ fontSize: 16, fontWeight: 600, color: BRAND, marginTop: 8 }}>
             # {invoice.number}
           </div>
-          <div
+        <div
             style={{
               marginTop: 16,
               display: "inline-block",
               background: "#f8fafc",
+              border: "1px solid #e2e8f0",
               padding: "10px 16px",
               borderRadius: 4,
               minWidth: 200,
@@ -331,6 +335,9 @@ export function InvoicePrintTemplate({
           .invoice-print-area {
             padding: 0 !important;
             box-shadow: none !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            color-scheme: light !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

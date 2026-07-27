@@ -195,10 +195,8 @@ export function InvoicePrintTemplate({
                 <td style={tdStyle("left", "#374151")}>{i + 1}</td>
                 <td style={tdStyle("left", "#0f172a")}>
                   {li.description || "—"}
-                  {taxSystem.showHSN && li.hsnCode && (
-                    <div style={{ fontSize: 11, color: "#6b7280" }}>HSN/SAC: {li.hsnCode}</div>
-                  )}
                 </td>
+
                 <td style={tdStyle("right", "#374151")}>
                   {hasQtyRate ? formatQty(li.qty) : ""}
                 </td>

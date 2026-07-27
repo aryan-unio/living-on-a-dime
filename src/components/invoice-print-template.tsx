@@ -95,16 +95,18 @@ export function InvoicePrintTemplate({
         <div style={{ flex: "0 0 55%", textAlign: "right" }}>
           <div
             style={{
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: 900,
               letterSpacing: "-1px",
               color: "#000",
               lineHeight: 1,
               textTransform: "uppercase",
+              whiteSpace: "nowrap",
             }}
           >
             TAX INVOICE
           </div>
+
           <div style={{ fontSize: 16, fontWeight: 600, color: BRAND, marginTop: 8 }}>
             # {invoice.number}
           </div>

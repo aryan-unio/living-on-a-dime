@@ -36,8 +36,9 @@ export function InvoicePrintTemplate({
 
   return (
     <div
-      className="bg-white p-10 text-[13px] text-slate-900"
+      className="invoice-print-area bg-white text-[13px] text-slate-900"
       style={{
+        padding: 40,
         minHeight: 800,
         fontFamily: "Inter, system-ui, sans-serif",
         WebkitPrintColorAdjust: "exact",
@@ -46,48 +47,73 @@ export function InvoicePrintTemplate({
     >
       {/* HEADER */}
       <div className="flex items-start justify-between gap-8">
-        <div className="flex items-start gap-4">
+        {/* LEFT 40% */}
+        <div style={{ flex: "0 0 40%" }}>
           <CompanyLogo company={company} />
-          <div>
-            <div className="text-2xl font-bold leading-tight text-slate-900">
-              {company.name || "Your Company"}
+          <div
+            style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15, marginTop: 12, color: "#0f172a" }}
+          >
+            {company.name || "Your Company"}
+          </div>
+          {company.tagline && (
+            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
+              {company.tagline}
             </div>
-            {company.tagline && (
-              <div className="mt-0.5 text-xs text-slate-500">{company.tagline}</div>
+          )}
+          <div style={{ height: 12 }} />
+          <div style={{ color: BRAND, fontSize: 12, lineHeight: 1.7 }}>
+            {[company.city, company.state, company.pin].filter(Boolean).length > 0 && (
+              <div>
+                {[[company.city, company.state].filter(Boolean).join(", "), company.pin]
+                  .filter(Boolean)
+                  .join(" ")}
+              </div>
             )}
-            <div
-              className="mt-3 space-y-0.5 text-[12px] leading-relaxed"
-              style={{ color: BRAND }}
-            >
-              {[company.city, company.state, company.pin]
-                .filter(Boolean).length > 0 && (
-                <div>
-                  {[company.city, company.state, company.pin].filter(Boolean).join(", ")}
-                </div>
-              )}
-              {company.country && <div>{company.country}</div>}
-              {company.email && <div>{company.email}</div>}
-              {company.website && <div>{company.website}</div>}
-            </div>
+            {company.country && <div>{company.country}</div>}
+            {company.email && <div>{company.email}</div>}
+            {company.website && <div>{company.website}</div>}
           </div>
         </div>
 
-        <div className="text-right">
+        {/* RIGHT 60% */}
+        <div style={{ flex: "0 0 55%", textAlign: "right" }}>
           <div
-            className="font-bold uppercase leading-none text-slate-900"
-            style={{ fontSize: 40, letterSpacing: "0.02em" }}
+            style={{
+              fontSize: 48,
+              fontWeight: 900,
+              letterSpacing: "-1px",
+              color: "#000",
+              lineHeight: 1,
+              textTransform: "uppercase",
+            }}
           >
             TAX INVOICE
           </div>
-          <div className="mt-2 text-sm font-semibold" style={{ color: BRAND }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: BRAND, marginTop: 8 }}>
             # {invoice.number}
           </div>
           <div
-            className="mt-4 inline-block rounded px-4 py-2 text-right"
-            style={{ background: "#F8FAFC", minWidth: 200 }}
+            style={{
+              marginTop: 16,
+              display: "inline-block",
+              background: "#f8fafc",
+              padding: "10px 16px",
+              borderRadius: 4,
+              minWidth: 200,
+              textAlign: "right",
+            }}
           >
-            <div className="text-xs uppercase text-slate-500">Balance Due</div>
-            <div className="text-xl font-bold text-slate-900">
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+                color: "#6b7280",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Balance Due
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: "#000", marginTop: 2 }}>
               {formatMoney(totals.balance, curr)}
             </div>
           </div>
@@ -95,64 +121,74 @@ export function InvoicePrintTemplate({
       </div>
 
       {/* DIVIDER */}
-      <div className="mt-6 border-t border-slate-200" />
+      <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "24px 0" }} />
 
-      {/* META ROW */}
-      <div className="mt-4 flex justify-end">
-        <div className="w-72 space-y-1 text-[12px]">
-          <MetaRow label="Invoice Date :" value={formatDate(invoice.date)} />
-          <MetaRow label="Terms :" value={terms} />
-          <MetaRow label="Due Date :" value={formatDate(invoice.dueDate)} />
-        </div>
+      {/* META (right) */}
+      <div style={{ marginLeft: "auto", width: 320 }}>
+        <MetaRow label="Invoice Date :" value={formatDate(invoice.date)} />
+        <MetaRow label="Terms :" value={terms} />
+        <MetaRow label="Due Date :" value={formatDate(invoice.dueDate)} />
       </div>
 
-      {/* BILL TO */}
-      <div className="mt-6">
-        <div className="text-[13px] font-bold text-slate-900">
+      {/* CUSTOMER */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>
           {customer?.companyName || customer?.displayName || "—"}
         </div>
         {customer?.companyName && customer?.displayName && (
-          <div className="text-[12px] text-slate-600">{customer.displayName}</div>
+          <div style={{ fontSize: 14, color: "#6b7280" }}>{customer.displayName}</div>
         )}
         {(customer?.city || customer?.state) && (
-          <div className="text-[12px] text-slate-500">
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
             {[customer?.city, customer?.state].filter(Boolean).join(", ")}
           </div>
         )}
       </div>
 
       {/* LINE ITEMS */}
-      <table className="mt-6 w-full border-collapse text-[12px]">
+      <table
+        style={{
+          marginTop: 24,
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: 12,
+        }}
+      >
         <thead>
-          <tr style={{ background: "#1F2A44", color: "#fff" }}>
-            <th className="px-3 py-2 text-left font-semibold w-8">#</th>
-            <th className="px-3 py-2 text-left font-semibold">Item &amp; Description</th>
-            <th className="px-3 py-2 text-right font-semibold w-20">Qty</th>
-            <th className="px-3 py-2 text-right font-semibold w-28">Rate</th>
-            <th className="px-3 py-2 text-right font-semibold w-28">Amount</th>
+          <tr style={{ background: "#1e293b", color: "#fff" }}>
+            <th style={thStyle(40, "left")}>#</th>
+            <th style={thStyle(undefined, "left")}>Description</th>
+            <th style={thStyle(80, "right")}>Qty</th>
+            <th style={thStyle(110, "right")}>Rate</th>
+            <th style={thStyle(120, "right")}>Amount</th>
           </tr>
         </thead>
         <tbody>
           {invoice.lineItems.map((li, i) => {
+            const isFlat = (li.qty ?? 0) === 1 && (li.rate ?? 0) === 0;
             const hasQtyRate = (li.qty ?? 0) > 0 && (li.rate ?? 0) > 0;
             const amt = (li.qty || 0) * (li.rate || 0);
+            const rowBg = i % 2 === 0 ? "#ffffff" : "#fafafa";
             return (
-              <tr key={li.id} className="border-b border-slate-200 align-top">
-                <td className="px-3 py-3 text-slate-700">{i + 1}</td>
-                <td className="px-3 py-3 text-slate-900">
+              <tr
+                key={li.id}
+                style={{ background: rowBg, borderBottom: "1px solid #f1f5f9", verticalAlign: "top" }}
+              >
+                <td style={tdStyle("left", "#374151")}>{i + 1}</td>
+                <td style={tdStyle("left", "#0f172a")}>
                   {li.description || "—"}
                   {taxSystem.showHSN && li.hsnCode && (
-                    <div className="text-[11px] text-slate-500">HSN/SAC: {li.hsnCode}</div>
+                    <div style={{ fontSize: 11, color: "#6b7280" }}>HSN/SAC: {li.hsnCode}</div>
                   )}
                 </td>
-                <td className="px-3 py-3 text-right text-slate-700">
+                <td style={tdStyle("right", "#374151")}>
                   {hasQtyRate ? formatQty(li.qty) : ""}
                 </td>
-                <td className="px-3 py-3 text-right text-slate-700">
+                <td style={tdStyle("right", "#374151")}>
                   {hasQtyRate ? formatMoney(li.rate, curr) : ""}
                 </td>
-                <td className="px-3 py-3 text-right font-medium text-slate-900">
-                  {formatMoney(amt || li.rate || 0, curr)}
+                <td style={{ ...tdStyle("right", "#0f172a"), fontWeight: 500 }}>
+                  {formatMoney(isFlat ? li.rate || 0 : amt, curr)}
                 </td>
               </tr>
             );
@@ -161,102 +197,158 @@ export function InvoicePrintTemplate({
       </table>
 
       {/* TOTALS */}
-      <div className="mt-6 flex justify-end">
-        <div className="w-80">
-          <div className="border-t border-slate-300 pt-3 space-y-1.5 text-[12px]">
-            <Row label="Sub Total" value={formatMoney(totals.subtotal, curr)} />
-            {totals.discountAmount > 0 && (
-              <Row label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />
-            )}
-            {totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax > 0 && (
-              <Row label={taxSystem.label} value={formatMoney(
-                totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax, curr,
-              )} />
-            )}
-            {totals.adjustment !== 0 && (
-              <Row label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />
-            )}
-            <div className="flex items-center justify-between border-t border-slate-300 pt-2 text-[13px] font-bold text-slate-900">
-              <span>Total</span>
-              <span>{formatMoney(totals.total, curr)}</span>
-            </div>
-            <div
-              className="mt-1 flex items-center justify-between rounded px-2 py-2 text-[13px] font-bold text-slate-900"
-              style={{ background: "#F1F5F9" }}
-            >
-              <span>Balance Due</span>
-              <span>{formatMoney(totals.balance, curr)}</span>
-            </div>
+      <div style={{ marginTop: 24, marginLeft: "auto", width: 320 }}>
+        <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", marginBottom: 12 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
+          <TotalRow label="Sub Total" value={formatMoney(totals.subtotal, curr)} />
+          {totals.discountAmount > 0 && (
+            <TotalRow label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />
+          )}
+          {totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax > 0 && (
+            <TotalRow
+              label={taxSystem.label}
+              value={formatMoney(
+                totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax,
+                curr,
+              )}
+            />
+          )}
+          {totals.adjustment !== 0 && (
+            <TotalRow label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />
+          )}
+          <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "6px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#0f172a", fontSize: 13 }}>
+            <span>Total</span>
+            <span>{formatMoney(totals.total, curr)}</span>
           </div>
-          <div className="mt-3 text-right text-[11px] italic text-slate-600">
-            Total In Words: {words} /-
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              background: "#f8fafc",
+              padding: 8,
+              borderRadius: 4,
+              fontWeight: 700,
+              color: "#0f172a",
+              fontSize: 13,
+              marginTop: 4,
+            }}
+          >
+            <span>Balance Due</span>
+            <span>{formatMoney(totals.balance, curr)}</span>
           </div>
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontStyle: "italic",
+            fontSize: 12,
+            textAlign: "right",
+            color: "#374151",
+          }}
+        >
+          Total In Words: {words} /-
         </div>
       </div>
 
-      {/* NOTES + PAYMENT OPTIONS */}
-      <div className="mt-10 space-y-6">
-        {invoice.notes && (
-          <div className="text-[12px] text-slate-700">
-            <div className="whitespace-pre-wrap">{invoice.notes}</div>
-          </div>
-        )}
-        {!invoice.notes && (
-          <div className="text-[12px] text-slate-700">Thanks for your business.</div>
-        )}
-
-        {showPayments && (
-          <div>
-            <div
-              className="text-[13px] font-semibold"
-              style={{ color: BRAND }}
-            >
-              Payment Options
-            </div>
-            <div className="mt-1 space-y-0.5 text-[12px] text-slate-700">
-              {paymentLines.map((l) => (
-                <div key={l.label}>
-                  <span>{l.label} :- </span>
-                  <span className="text-slate-900">{l.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {invoice.terms && (
-          <div className="text-[11px] text-slate-500">
-            <div className="mb-0.5 font-semibold uppercase text-slate-500">Terms &amp; Conditions</div>
-            <div className="whitespace-pre-wrap">{invoice.terms}</div>
-          </div>
+      {/* NOTES */}
+      <div style={{ marginTop: 32, fontSize: 13, color: "#374151" }}>
+        {invoice.notes ? (
+          <div style={{ whiteSpace: "pre-wrap" }}>{invoice.notes}</div>
+        ) : (
+          <div>Thanks for your business.</div>
         )}
       </div>
+
+      {/* TERMS */}
+      {invoice.terms && (
+        <div style={{ marginTop: 24 }}>
+          <div
+            style={{
+              color: BRAND,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Terms &amp; Conditions
+          </div>
+          <div style={{ fontSize: 13, color: "#374151", whiteSpace: "pre-wrap", marginTop: 4 }}>
+            {invoice.terms}
+          </div>
+        </div>
+      )}
+
+      {/* PAYMENT OPTIONS */}
+      {showPayments && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ color: BRAND, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+            Payment Options
+          </div>
+          <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.8 }}>
+            {paymentLines.map((l) => (
+              <div key={l.label}>
+                {l.label} :- {l.value}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* FOOTER */}
-      <div className="mt-12 border-t border-slate-200 pt-2 text-right text-[11px] text-slate-500">
-        1
-      </div>
+      <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", marginTop: 40 }} />
+      <div style={{ textAlign: "right", fontSize: 11, color: "#6b7280", marginTop: 6 }}>1</div>
+
+      <style>{`
+        @media print {
+          .invoice-print-area {
+            padding: 0 !important;
+            box-shadow: none !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          @page { margin: 15mm; }
+        }
+      `}</style>
     </div>
   );
+}
+
+function thStyle(width: number | undefined, align: "left" | "right"): React.CSSProperties {
+  return {
+    padding: "10px 8px",
+    textAlign: align,
+    fontWeight: 600,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    ...(width ? { width } : {}),
+  };
+}
+
+function tdStyle(align: "left" | "right", color: string): React.CSSProperties {
+  return { padding: "12px 8px", textAlign: align, color };
 }
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="font-medium" style={{ color: BRAND }}>{label}</span>
-      <span className="text-slate-900">{value}</span>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12, marginBottom: 4 }}>
+      <span style={{ color: BRAND, fontWeight: 500, textAlign: "right" }}>{label}</span>
+      <span style={{ color: "#000", textAlign: "right" }}>{value}</span>
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function TotalRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-slate-600">{label}</span>
-      <span className="text-slate-900">{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", color: "#374151" }}>
+      <span>{label}</span>
+      <span style={{ color: "#0f172a" }}>{value}</span>
     </div>
   );
 }
+
 
 function formatQty(q: number): string {
   if (Number.isInteger(q)) return String(q);
@@ -287,7 +379,7 @@ function CompanyLogo({ company }: { company: Company }) {
         src={logo}
         alt={`${company.name || "Company"} logo`}
         crossOrigin="anonymous"
-        style={{ maxHeight: 96, maxWidth: 180, objectFit: "contain" }}
+        style={{ maxHeight: 80, maxWidth: 180, objectFit: "contain", display: "block" }}
       />
     );
   }

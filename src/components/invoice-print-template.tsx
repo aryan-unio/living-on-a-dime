@@ -379,7 +379,7 @@ function CompanyLogo({ company }: { company: Company }) {
         src={logo}
         alt={`${company.name || "Company"} logo`}
         crossOrigin="anonymous"
-        style={{ maxHeight: 96, maxWidth: 180, objectFit: "contain" }}
+        style={{ maxHeight: 80, maxWidth: 180, objectFit: "contain", display: "block" }}
       />
     );
   }

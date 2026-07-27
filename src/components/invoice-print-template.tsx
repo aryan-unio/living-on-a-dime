@@ -1,7 +1,21 @@
 import type { Company, Customer, Invoice } from "@/lib/types";
 import type { InvoiceTotals } from "@/lib/calc";
-import { formatDate, formatMoney, amountInWords } from "@/lib/format";
+import { formatDate, amountInWords } from "@/lib/format";
 import { getTaxSystem } from "@/lib/taxSystem";
+
+// Auto-decimal money formatter: 0 decimals when whole, 2 when fractional
+function fmtMoney(amount: number | undefined | null, currency: string): string {
+  const v = typeof amount === "number" && isFinite(amount) ? amount : 0;
+  const digits = Math.round(v * 100) % 100 === 0 ? 0 : 2;
+  const locale = currency === "INR" ? "en-IN" : currency === "EUR" ? "de-DE" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(v);
+}
+
 
 const BRAND = "#EA580C";
 

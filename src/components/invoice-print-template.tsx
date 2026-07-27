@@ -212,8 +212,16 @@ export function InvoicePrintTemplate({
         </tbody>
       </table>
 
+      {/* HSN/SAC compliance line */}
+      {taxSystem.showHSN && invoice.lineItems.some((li) => li.hsnCode) && (
+        <div style={{ marginTop: 8, fontSize: 11, color: "#6b7280" }}>
+          HSN/SAC:{" "}
+          {[...new Set(invoice.lineItems.map((li) => li.hsnCode).filter(Boolean))].join(", ")}
+        </div>
+      )}
+
       {/* TOTALS */}
-      <div style={{ marginTop: 24, marginLeft: "auto", width: 320 }}>
+      <div style={{ marginTop: 24, marginLeft: "auto", width: 360 }}>
         <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", marginBottom: 12 }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
           <TotalRow label="Sub Total" value={fmtMoney(totals.subtotal, curr)} />
@@ -254,18 +262,20 @@ export function InvoicePrintTemplate({
             <span>{fmtMoney(totals.balance, curr)}</span>
           </div>
         </div>
-        <div
-          style={{
-            marginTop: 8,
-            fontStyle: "italic",
-            fontSize: 12,
-            textAlign: "right",
-            color: "#374151",
-          }}
-        >
-          Total In Words: {words} /-
-        </div>
       </div>
+      <div
+        style={{
+          marginTop: 8,
+          fontStyle: "italic",
+          fontSize: 12,
+          textAlign: "right",
+          color: "#374151",
+          wordBreak: "break-word",
+        }}
+      >
+        Total In Words: {words} /-
+      </div>
+
 
       {/* NOTES */}
       <div style={{ marginTop: 32, fontSize: 13, color: "#374151" }}>

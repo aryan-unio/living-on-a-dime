@@ -128,7 +128,7 @@ export function InvoicePrintTemplate({
               Balance Due
             </div>
             <div style={{ fontSize: 28, fontWeight: 700, color: "#000", marginTop: 2 }}>
-              {formatMoney(totals.balance, curr)}
+              {fmtMoney(totals.balance, curr)}
             </div>
           </div>
         </div>
@@ -199,10 +199,10 @@ export function InvoicePrintTemplate({
                   {hasQtyRate ? formatQty(li.qty) : ""}
                 </td>
                 <td style={tdStyle("right", "#374151")}>
-                  {hasQtyRate ? formatMoney(li.rate, curr) : ""}
+                  {hasQtyRate ? fmtMoney(li.rate, curr) : ""}
                 </td>
                 <td style={{ ...tdStyle("right", "#0f172a"), fontWeight: 500 }}>
-                  {formatMoney(isFlat ? li.rate || 0 : amt, curr)}
+                  {fmtMoney(isFlat ? li.rate || 0 : amt, curr)}
                 </td>
               </tr>
             );
@@ -214,26 +214,26 @@ export function InvoicePrintTemplate({
       <div style={{ marginTop: 24, marginLeft: "auto", width: 320 }}>
         <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", marginBottom: 12 }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
-          <TotalRow label="Sub Total" value={formatMoney(totals.subtotal, curr)} />
+          <TotalRow label="Sub Total" value={fmtMoney(totals.subtotal, curr)} />
           {totals.discountAmount > 0 && (
-            <TotalRow label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />
+            <TotalRow label="Discount" value={`− ${fmtMoney(totals.discountAmount, curr)}`} />
           )}
           {totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax > 0 && (
             <TotalRow
               label={taxSystem.label}
-              value={formatMoney(
+              value={fmtMoney(
                 totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax,
                 curr,
               )}
             />
           )}
           {totals.adjustment !== 0 && (
-            <TotalRow label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />
+            <TotalRow label={invoice.adjustment?.label || "Adjustment"} value={fmtMoney(totals.adjustment, curr)} />
           )}
           <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "6px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#0f172a", fontSize: 13 }}>
             <span>Total</span>
-            <span>{formatMoney(totals.total, curr)}</span>
+            <span>{fmtMoney(totals.total, curr)}</span>
           </div>
           <div
             style={{
@@ -249,7 +249,7 @@ export function InvoicePrintTemplate({
             }}
           >
             <span>Balance Due</span>
-            <span>{formatMoney(totals.balance, curr)}</span>
+            <span>{fmtMoney(totals.balance, curr)}</span>
           </div>
         </div>
         <div

@@ -76,6 +76,7 @@ export function InvoicePrintTemplate({
           )}
           <div style={{ height: 12 }} />
           <div style={{ color: BRAND, fontSize: 12, lineHeight: 1.7 }}>
+            {company.street && <div>{company.street}</div>}
             {[company.city, company.state, company.pin].filter(Boolean).length > 0 && (
               <div>
                 {[[company.city, company.state].filter(Boolean).join(", "), company.pin]
@@ -87,6 +88,7 @@ export function InvoicePrintTemplate({
             {company.email && <div>{company.email}</div>}
             {company.website && <div>{company.website}</div>}
           </div>
+
         </div>
 
         {/* RIGHT 60% */}

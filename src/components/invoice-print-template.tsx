@@ -35,7 +35,7 @@ export function InvoicePrintTemplate({
     : { ...baseTaxSystem, key: "other" as const, label: "Tax", showHSN: false };
 
   const paymentLines = buildPaymentLines(company);
-  const showPayments = paymentLines.length > 0;
+  const showPayments = curr === "INR" && paymentLines.length > 0;
 
   const daysDiff = Math.max(
     0,
@@ -70,7 +70,7 @@ export function InvoicePrintTemplate({
           <div
             style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15, marginTop: 12, color: "#0f172a" }}
           >
-            {company.name || "Your Company"}
+            {company.name}
           </div>
           {company.tagline && (
             <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
@@ -399,8 +399,21 @@ function buildPaymentLines(company: Company): { label: string; value: string }[]
 }
 
 function wordsOnly(amount: number, currency: string): string {
-  // Strip the currency prefix from amountInWords: "Rupees Seventy Thousand Only" -> "Seventy Thousand Only"
   const s = amountInWords(amount, currency);
+
+  if (currency === "INR") {
+    // "Rupees Three Thousand Six Hundred Fifty Only" -> "Three Thousand Six Hundred Fifty Rupees Only"
+    return s.replace(/^Rupees\s+(.*?)\s+Only$/i, "$1 Rupees Only");
+  }
+
+  if (currency === "USD") {
+    // "US Dollars Four Hundred Two and Thirty Eight Cents Only" -> "Four Hundred Two dollars and Thirty Eight Cents Only"
+    const withCents = s.match(/^US Dollars\s+(.*?)\s+and\s+(.*?\s+Cents\s+Only)$/i);
+    if (withCents) return `${withCents[1]} dollars and ${withCents[2]}`;
+    // "US Dollars Four Hundred Two Only" -> "Four Hundred Two dollars Only"
+    return s.replace(/^US Dollars\s+(.*?)\s+Only$/i, "$1 dollars Only");
+  }
+
   return s.replace(/^(Rupees|US Dollars|Euros|Pounds Sterling|[A-Z]{3})\s+/i, "");
 }
 

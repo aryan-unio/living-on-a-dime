@@ -1,7 +1,21 @@
 import type { Company, Customer, Invoice } from "@/lib/types";
 import type { InvoiceTotals } from "@/lib/calc";
-import { formatDate, formatMoney, amountInWords } from "@/lib/format";
+import { formatDate, amountInWords } from "@/lib/format";
 import { getTaxSystem } from "@/lib/taxSystem";
+
+// Auto-decimal money formatter: 0 decimals when whole, 2 when fractional
+function fmtMoney(amount: number | undefined | null, currency: string): string {
+  const v = typeof amount === "number" && isFinite(amount) ? amount : 0;
+  const digits = Math.round(v * 100) % 100 === 0 ? 0 : 2;
+  const locale = currency === "INR" ? "en-IN" : currency === "EUR" ? "de-DE" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(v);
+}
+
 
 const BRAND = "#EA580C";
 
@@ -62,6 +76,7 @@ export function InvoicePrintTemplate({
           )}
           <div style={{ height: 12 }} />
           <div style={{ color: BRAND, fontSize: 12, lineHeight: 1.7 }}>
+            {company.street && <div>{company.street}</div>}
             {[company.city, company.state, company.pin].filter(Boolean).length > 0 && (
               <div>
                 {[[company.city, company.state].filter(Boolean).join(", "), company.pin]
@@ -73,22 +88,25 @@ export function InvoicePrintTemplate({
             {company.email && <div>{company.email}</div>}
             {company.website && <div>{company.website}</div>}
           </div>
+
         </div>
 
         {/* RIGHT 60% */}
         <div style={{ flex: "0 0 55%", textAlign: "right" }}>
           <div
             style={{
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: 900,
               letterSpacing: "-1px",
               color: "#000",
               lineHeight: 1,
               textTransform: "uppercase",
+              whiteSpace: "nowrap",
             }}
           >
             TAX INVOICE
           </div>
+
           <div style={{ fontSize: 16, fontWeight: 600, color: BRAND, marginTop: 8 }}>
             # {invoice.number}
           </div>
@@ -114,7 +132,7 @@ export function InvoicePrintTemplate({
               Balance Due
             </div>
             <div style={{ fontSize: 28, fontWeight: 700, color: "#000", marginTop: 2 }}>
-              {formatMoney(totals.balance, curr)}
+              {fmtMoney(totals.balance, curr)}
             </div>
           </div>
         </div>
@@ -177,18 +195,16 @@ export function InvoicePrintTemplate({
                 <td style={tdStyle("left", "#374151")}>{i + 1}</td>
                 <td style={tdStyle("left", "#0f172a")}>
                   {li.description || "—"}
-                  {taxSystem.showHSN && li.hsnCode && (
-                    <div style={{ fontSize: 11, color: "#6b7280" }}>HSN/SAC: {li.hsnCode}</div>
-                  )}
                 </td>
+
                 <td style={tdStyle("right", "#374151")}>
                   {hasQtyRate ? formatQty(li.qty) : ""}
                 </td>
                 <td style={tdStyle("right", "#374151")}>
-                  {hasQtyRate ? formatMoney(li.rate, curr) : ""}
+                  {hasQtyRate ? fmtMoney(li.rate, curr) : ""}
                 </td>
                 <td style={{ ...tdStyle("right", "#0f172a"), fontWeight: 500 }}>
-                  {formatMoney(isFlat ? li.rate || 0 : amt, curr)}
+                  {fmtMoney(isFlat ? li.rate || 0 : amt, curr)}
                 </td>
               </tr>
             );
@@ -196,30 +212,38 @@ export function InvoicePrintTemplate({
         </tbody>
       </table>
 
+      {/* HSN/SAC compliance line */}
+      {taxSystem.showHSN && invoice.lineItems.some((li) => li.hsnCode) && (
+        <div style={{ marginTop: 8, fontSize: 11, color: "#6b7280" }}>
+          HSN/SAC:{" "}
+          {[...new Set(invoice.lineItems.map((li) => li.hsnCode).filter(Boolean))].join(", ")}
+        </div>
+      )}
+
       {/* TOTALS */}
-      <div style={{ marginTop: 24, marginLeft: "auto", width: 320 }}>
+      <div style={{ marginTop: 24, marginLeft: "auto", width: 360 }}>
         <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", marginBottom: 12 }} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
-          <TotalRow label="Sub Total" value={formatMoney(totals.subtotal, curr)} />
+          <TotalRow label="Sub Total" value={fmtMoney(totals.subtotal, curr)} />
           {totals.discountAmount > 0 && (
-            <TotalRow label="Discount" value={`− ${formatMoney(totals.discountAmount, curr)}`} />
+            <TotalRow label="Discount" value={`− ${fmtMoney(totals.discountAmount, curr)}`} />
           )}
           {totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax > 0 && (
             <TotalRow
               label={taxSystem.label}
-              value={formatMoney(
+              value={fmtMoney(
                 totals.taxAmount + totals.igst + totals.cgst + totals.sgst + totals.gst + totals.hst + totals.pst + totals.salesTax,
                 curr,
               )}
             />
           )}
           {totals.adjustment !== 0 && (
-            <TotalRow label={invoice.adjustment?.label || "Adjustment"} value={formatMoney(totals.adjustment, curr)} />
+            <TotalRow label={invoice.adjustment?.label || "Adjustment"} value={fmtMoney(totals.adjustment, curr)} />
           )}
           <hr style={{ border: 0, borderTop: "1px solid #e5e7eb", margin: "6px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#0f172a", fontSize: 13 }}>
             <span>Total</span>
-            <span>{formatMoney(totals.total, curr)}</span>
+            <span>{fmtMoney(totals.total, curr)}</span>
           </div>
           <div
             style={{
@@ -235,21 +259,23 @@ export function InvoicePrintTemplate({
             }}
           >
             <span>Balance Due</span>
-            <span>{formatMoney(totals.balance, curr)}</span>
+            <span>{fmtMoney(totals.balance, curr)}</span>
           </div>
         </div>
-        <div
-          style={{
-            marginTop: 8,
-            fontStyle: "italic",
-            fontSize: 12,
-            textAlign: "right",
-            color: "#374151",
-          }}
-        >
-          Total In Words: {words} /-
-        </div>
       </div>
+      <div
+        style={{
+          marginTop: 8,
+          fontStyle: "italic",
+          fontSize: 12,
+          textAlign: "right",
+          color: "#374151",
+          wordBreak: "break-word",
+        }}
+      >
+        Total In Words: {words} /-
+      </div>
+
 
       {/* NOTES */}
       <div style={{ marginTop: 32, fontSize: 13, color: "#374151" }}>

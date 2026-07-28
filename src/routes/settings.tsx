@@ -74,7 +74,6 @@ function Settings() {
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
-    if (!c.name.trim()) e.name = "Company name is required";
     if (c.tagline && c.tagline.length > 60) e.tagline = "Max 60 characters";
     if (c.email && !EMAIL_RX.test(c.email)) e.email = "Enter a valid email address";
     if (c.phone && !/^\d{10}$/.test(c.phone.replace(/\D/g, ""))) e.phone = "Enter a valid 10-digit phone";
@@ -203,7 +202,7 @@ function Settings() {
                       </>
                     ) : (
                       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--brand)] text-lg font-bold text-white">
-                        {initials(c.name)}
+                        {initials(c.name || "Your Company")}
                       </div>
                     )}
                   </div>
@@ -220,8 +219,8 @@ function Settings() {
                 {errors.logo && <p className="mt-1 text-xs text-red-500">{errors.logo}</p>}
               </div>
 
-              <Field label="Company Name *" error={errors.name}>
-                <Input value={c.name} onChange={(e) => set("name", e.target.value)} className={fieldErr("name")} />
+              <Field label="Company Name" error={errors.name}>
+                <Input value={c.name} onChange={(e) => set("name", e.target.value)} placeholder="Your Company" />
               </Field>
               <Field label={`Tagline (${(c.tagline || "").length}/60)`} error={errors.tagline}>
                 <Input value={c.tagline} maxLength={60} onChange={(e) => set("tagline", e.target.value)} className={fieldErr("tagline")} />

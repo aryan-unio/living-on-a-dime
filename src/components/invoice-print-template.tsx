@@ -70,7 +70,7 @@ export function InvoicePrintTemplate({
           <div
             style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15, marginTop: 12, color: "#0f172a" }}
           >
-            {company.name}
+            {company.name || ""}
           </div>
           {company.tagline && (
             <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
@@ -423,15 +423,15 @@ function CompanyLogo({ company }: { company: Company }) {
     return (
       <img
         src={logo}
-        alt={`${company.name || "Company"} logo`}
+        alt={`${company.name || ""} logo`}
         crossOrigin="anonymous"
         style={{ maxHeight: 80, maxWidth: 180, objectFit: "contain", display: "block" }}
       />
     );
   }
-  const name = (company.name || "U").trim();
+  const name = (company.name || "").trim();
   const parts = name.split(/\s+/);
-  const inits = ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "U";
+  const inits = ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "";
   return (
     <div
       style={{

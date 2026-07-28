@@ -96,6 +96,7 @@ export interface Invoice {
   adjustment?: { label: string; value: number };
   notes?: string;
   terms?: string;
+  paymentTerms?: string;
   status: InvoiceStatus;
   payments: Payment[];
   attachments?: string[];

@@ -32,7 +32,7 @@ import { computeInvoiceTotals, deriveStatus } from "@/lib/calc";
 import { formatDate, formatMoney } from "@/lib/format";
 import type { Payment, PaymentMode } from "@/lib/types";
 
-export const Route = createFileRoute("/invoices/$id")({
+export const Route = createFileRoute("/invoices/$id/")({
   head: () => ({ meta: [{ title: "Invoice — Unio Invoice" }] }),
   component: InvoiceDetail,
 });

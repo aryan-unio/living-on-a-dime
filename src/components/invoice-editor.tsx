@@ -193,6 +193,14 @@ export function InvoiceEditor({
                   onChange={(e) => setInv({ ...inv, dueDate: new Date(e.target.value).toISOString() })}
                 />
               </div>
+              <div className="md:col-span-2">
+                <Label>Terms</Label>
+                <Input
+                  value={inv.paymentTerms ?? "Due on Receipt"}
+                  onChange={(e) => setInv({ ...inv, paymentTerms: e.target.value })}
+                  placeholder="e.g. Due on Receipt, Net 30"
+                />
+              </div>
             </CardContent>
           </Card>
 

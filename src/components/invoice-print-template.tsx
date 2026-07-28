@@ -37,14 +37,7 @@ export function InvoicePrintTemplate({
   const paymentLines = buildPaymentLines(company);
   const showPayments = curr === "INR" && paymentLines.length > 0;
 
-  const daysDiff = Math.max(
-    0,
-    Math.round(
-      (new Date(invoice.dueDate).getTime() - new Date(invoice.date).getTime()) /
-        86400000,
-    ),
-  );
-  const terms = daysDiff > 0 ? `Net ${daysDiff}` : "Due on Receipt";
+  const terms = invoice.paymentTerms || "Due on Receipt";
 
   const words = wordsOnly(totals.total, curr);
 

@@ -20,12 +20,14 @@ export const Route = createFileRoute("/quotes/new")({
 function NewQuote() {
   const customers = useStore(() => store.getCustomers());
   const navigate = useNavigate();
+  const ymd = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const today = new Date();
   const expiry = new Date(); expiry.setDate(expiry.getDate() + 30);
 
   const [customerId, setCustomerId] = useState("");
-  const [date, setDate] = useState(today.toISOString().slice(0, 10));
-  const [expiryDate, setExpiryDate] = useState(expiry.toISOString().slice(0, 10));
+  const [date, setDate] = useState(ymd(today));
+  const [expiryDate, setExpiryDate] = useState(ymd(expiry));
   const [total, setTotal] = useState(0);
   const [notes, setNotes] = useState("");
 
@@ -34,8 +36,8 @@ function NewQuote() {
       id: uid("qte"),
       number: nextQuoteNumber(),
       customerId,
-      date: new Date(date).toISOString(),
-      expiryDate: new Date(expiryDate).toISOString(),
+      date: date,
+      expiryDate: expiryDate,
       status: "sent" as const,
       total,
       notes,

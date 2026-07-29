@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  IndianRupee, AlertTriangle, FileText, Receipt, ArrowUpRight, Wallet,
+  IndianRupee, AlertTriangle, Receipt, ArrowUpRight, Wallet,
 } from "lucide-react";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,15 @@ import { useStore } from "@/hooks/use-store";
 import { store } from "@/lib/storage";
 import { computeInvoiceTotals, deriveStatus } from "@/lib/calc";
 import { formatMoney, formatMoneyShort, formatDate } from "@/lib/format";
+
+const FALLBACK_RATES: Record<string, number> = { INR: 1, USD: 84, EUR: 90, GBP: 107 };
+function toINR(amount: number, currency: string | undefined, rate?: number): number {
+  const c = currency || "INR";
+  if (c === "INR") return amount;
+  if (rate && rate > 0) return amount * rate;
+  return amount * (FALLBACK_RATES[c] ?? 1);
+}
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Unio Invoice" }] }),
@@ -28,13 +37,11 @@ function Dashboard() {
   const company = useStore(() => store.getCompany());
 
   const data = useMemo(() => {
-    let outstanding = 0, overdueAmt = 0, paidThisMonth = 0, draftCount = 0;
-    const outstandingCurrencies = new Set<string>();
-    const paidCurrencies = new Set<string>();
+    let outstandingINR = 0, overdueINR = 0, paidThisMonthINR = 0, totalExpensesINR = 0;
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const statusCounts: Record<string, number> = {};
-    const customerRevenue: Record<string, { total: number; currency: string; latest: number }> = {};
+    const customerRevenue: Record<string, { totalINR: number; latest: number }> = {};
 
     invoices.forEach((inv) => {
       const cust = customers.find((c) => c.id === inv.customerId);
@@ -42,101 +49,75 @@ function Dashboard() {
       const status = deriveStatus(inv, company, cust);
       const invCurrency = inv.currency || company.currency;
       statusCounts[status] = (statusCounts[status] || 0) + 1;
+
+      // Determine an invoice-level rate from any payment recorded
+      const anyPayRate = inv.payments.find((p) => p.exchangeRate)?.exchangeRate;
+
       if (status !== "void" && status !== "draft") {
-        outstanding += t.balance;
-        if (t.balance > 0) outstandingCurrencies.add(invCurrency);
-        if (status === "overdue") overdueAmt += t.balance;
+        const balanceINR = toINR(t.balance, invCurrency, anyPayRate);
+        outstandingINR += balanceINR;
+        if (status === "overdue") overdueINR += balanceINR;
       }
-      if (status === "draft") draftCount++;
       inv.payments.forEach((p) => {
         const pd = new Date(p.date);
         if (pd >= monthStart) {
           const pCurr = p.currency || invCurrency;
-          const inrValue = pCurr === "INR" ? p.amount : (p.inrEquivalent ?? p.amount);
-          paidThisMonth += inrValue;
-          paidCurrencies.add("INR");
+          const inrValue = p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
+          paidThisMonthINR += inrValue;
         }
       });
       if (status === "paid") {
         const invTime = +new Date(inv.date);
+        const totalINR = toINR(t.total, invCurrency, anyPayRate);
         const existing = customerRevenue[inv.customerId];
-        if (!existing) {
-          customerRevenue[inv.customerId] = { total: t.total, currency: invCurrency, latest: invTime };
-        } else {
-          existing.total += t.total;
-          if (existing.currency !== invCurrency) existing.currency = ""; // mixed
-          if (invTime > existing.latest) {
-            existing.latest = invTime;
-            if (!existing.currency) existing.currency = invCurrency;
-          }
+        if (!existing) customerRevenue[inv.customerId] = { totalINR, latest: invTime };
+        else {
+          existing.totalINR += totalINR;
+          if (invTime > existing.latest) existing.latest = invTime;
         }
       }
     });
 
-    // 6 month revenue series
+    expenses.forEach((e) => { totalExpensesINR += e.amount; });
+
+    // 6 month revenue series (in INR)
     const months: { name: string; revenue: number; expenses: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
       const name = d.toLocaleString("en-IN", { month: "short" });
       let revenue = 0;
-      invoices.forEach((inv) =>
+      invoices.forEach((inv) => {
+        const invCurrency = inv.currency || company.currency;
         inv.payments.forEach((p) => {
           const pd = new Date(p.date);
-          if (pd >= d && pd < next) revenue += p.amount;
-        }),
-      );
+          if (pd >= d && pd < next) {
+            const pCurr = p.currency || invCurrency;
+            revenue += p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
+          }
+        });
+      });
       const exp = expenses
-        .filter((e) => {
-          const ed = new Date(e.date);
-          return ed >= d && ed < next;
-        })
+        .filter((e) => { const ed = new Date(e.date); return ed >= d && ed < next; })
         .reduce((s, e) => s + e.amount, 0);
       months.push({ name, revenue, expenses: exp });
     }
 
     const topCustomers = Object.entries(customerRevenue)
-      .map(([id, v]) => ({ customer: customers.find((c) => c.id === id), total: v.total, currency: v.currency || company.currency }))
+      .map(([id, v]) => ({ customer: customers.find((c) => c.id === id), totalINR: v.totalINR }))
       .filter((x) => x.customer)
-      .sort((a, b) => b.total - a.total)
+      .sort((a, b) => b.totalINR - a.totalINR)
       .slice(0, 5);
 
     const recent = [...invoices]
       .sort((a, b) => +new Date(b.date) - +new Date(a.date))
       .slice(0, 5);
 
-    const outstandingCurrency = outstandingCurrencies.size === 1 ? [...outstandingCurrencies][0] : company.currency;
-    const paidCurrency = paidCurrencies.size === 1 ? [...paidCurrencies][0] : company.currency;
-
     return {
-      outstanding, overdueAmt, paidThisMonth, draftCount,
-      outstandingCurrency, paidCurrency,
-      outstandingMixed: outstandingCurrencies.size > 1,
-      paidMixed: paidCurrencies.size > 1,
+      outstandingINR, overdueINR, paidThisMonthINR, totalExpensesINR,
       statusCounts, months, topCustomers, recent,
     };
   }, [invoices, customers, expenses, company]);
-
-
-  const outstandingExtraCurrencies = Math.max(0, (data.outstandingMixed ? 1 : 0)); // placeholder
-  // Recompute exact extras via re-scan (cheap)
-  const outstandingCurrencySet = new Set<string>();
-  const paidCurrencySet = new Set<string>();
-  invoices.forEach((inv) => {
-    const cust = customers.find((c) => c.id === inv.customerId);
-    const t = computeInvoiceTotals(inv, company, cust);
-    const s = deriveStatus(inv, company, cust);
-    const c = inv.currency || company.currency;
-    if (s !== "void" && s !== "draft" && t.balance > 0) outstandingCurrencySet.add(c);
-    inv.payments.forEach((p) => {
-      const pd = new Date(p.date);
-      const now = new Date();
-      if (pd >= new Date(now.getFullYear(), now.getMonth(), 1)) paidCurrencySet.add(c);
-    });
-  });
-  const outstandingExtras = Math.max(0, outstandingCurrencySet.size - 1);
-  const paidExtras = Math.max(0, paidCurrencySet.size - 1);
-  void outstandingExtraCurrencies;
 
   const statusData = Object.entries(data.statusCounts).map(([name, value]) => ({ name, value }));
   const COLORS: Record<string, string> = {
@@ -160,9 +141,9 @@ function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Total Outstanding"
-          value={formatMoneyShort(data.outstanding, data.outstandingCurrency)}
-          fullValue={formatMoney(data.outstanding, data.outstandingCurrency)}
-          hint={data.outstandingMixed ? `+${outstandingExtras} more currencies` : undefined}
+          value={formatMoneyShort(data.outstandingINR, "INR")}
+          fullValue={formatMoney(data.outstandingINR, "INR")}
+          hint="Converted to INR"
           icon={<IndianRupee size={18} />}
           tone="brand"
           to="/invoices"
@@ -170,9 +151,9 @@ function Dashboard() {
         />
         <KpiCard
           label="Overdue"
-          value={formatMoneyShort(data.overdueAmt, data.outstandingCurrency)}
-          fullValue={formatMoney(data.overdueAmt, data.outstandingCurrency)}
-          hint={data.outstandingMixed ? `+${outstandingExtras} more currencies` : undefined}
+          value={formatMoneyShort(data.overdueINR, "INR")}
+          fullValue={formatMoney(data.overdueINR, "INR")}
+          hint="Converted to INR"
           icon={<AlertTriangle size={18} />}
           tone="danger"
           to="/invoices"
@@ -180,24 +161,25 @@ function Dashboard() {
         />
         <KpiCard
           label="Paid this Month"
-          value={formatMoneyShort(data.paidThisMonth, data.paidCurrency)}
-          fullValue={formatMoney(data.paidThisMonth, data.paidCurrency)}
-          hint={data.paidMixed ? `+${paidExtras} more currencies` : undefined}
-
+          value={formatMoneyShort(data.paidThisMonthINR, "INR")}
+          fullValue={formatMoney(data.paidThisMonthINR, "INR")}
+          hint="Converted to INR"
           icon={<Wallet size={18} />}
           tone="success"
           to="/invoices"
           search={{ status: "paid", period: "this_month" }}
         />
         <KpiCard
-          label="Draft Invoices"
-          value={String(data.draftCount)}
-          icon={<FileText size={18} />}
+          label="Total Expenses"
+          value={formatMoneyShort(data.totalExpensesINR, "INR")}
+          fullValue={formatMoney(data.totalExpensesINR, "INR")}
+          hint="All time"
+          icon={<Wallet size={18} />}
           tone="info"
-          to="/invoices"
-          search={{ status: "draft" }}
+          to="/expenses"
         />
       </div>
+
 
 
 
@@ -315,7 +297,7 @@ function Dashboard() {
             {data.topCustomers.length === 0 && (
               <p className="text-sm text-muted-foreground">No paid invoices yet.</p>
             )}
-            {data.topCustomers.map(({ customer, total, currency }) => (
+            {data.topCustomers.map(({ customer, totalINR }) => (
               <Link
                 key={customer!.id}
                 to="/customers/$id"
@@ -331,7 +313,7 @@ function Dashboard() {
                     <div className="truncate text-xs text-muted-foreground">{customer!.companyName || customer!.email}</div>
                   </div>
                 </div>
-                <div className="text-sm font-semibold text-foreground">{formatMoney(total, currency)}</div>
+                <div className="text-sm font-semibold text-foreground">{formatMoney(totalINR, "INR")}</div>
               </Link>
             ))}
 

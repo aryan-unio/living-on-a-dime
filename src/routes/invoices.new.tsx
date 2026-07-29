@@ -16,12 +16,14 @@ function NewInvoice() {
     const today = new Date();
     const due = new Date();
     due.setDate(due.getDate() + 30);
+    const ymd = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     return {
       id: uid("inv"),
       number: nextInvoiceNumber(),
       customerId: "",
-      date: today.toISOString(),
-      dueDate: due.toISOString(),
+      date: ymd(today),
+      dueDate: ymd(due),
       
       lineItems: [
         { id: uid("li"), description: "", qty: 1, rate: 0, taxRate: 18, hsnCode: "" },

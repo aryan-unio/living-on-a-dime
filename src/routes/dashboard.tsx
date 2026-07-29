@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  IndianRupee, AlertTriangle, FileText, Receipt, ArrowUpRight, Wallet,
+  IndianRupee, AlertTriangle, Receipt, ArrowUpRight, Wallet,
 } from "lucide-react";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,15 @@ import { useStore } from "@/hooks/use-store";
 import { store } from "@/lib/storage";
 import { computeInvoiceTotals, deriveStatus } from "@/lib/calc";
 import { formatMoney, formatMoneyShort, formatDate } from "@/lib/format";
+
+const FALLBACK_RATES: Record<string, number> = { INR: 1, USD: 84, EUR: 90, GBP: 107 };
+function toINR(amount: number, currency: string | undefined, rate?: number): number {
+  const c = currency || "INR";
+  if (c === "INR") return amount;
+  if (rate && rate > 0) return amount * rate;
+  return amount * (FALLBACK_RATES[c] ?? 1);
+}
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Unio Invoice" }] }),

@@ -216,14 +216,25 @@ function InvoiceDetail() {
                 <p className="text-sm text-muted-foreground">No payments recorded.</p>
               ) : (
                 <ul className="space-y-2 text-sm">
-                  {invoice.payments.map((p) => (
-                    <li key={p.id} className="flex items-start justify-between border-b pb-2 last:border-0">
-                      <div>
-                        <div className="font-medium">{formatMoney(p.amount, curr)}</div>
-                        <div className="text-xs text-muted-foreground">{formatDate(p.date)} · {p.mode.replace("_", " ")}{p.reference ? ` · ${p.reference}` : ""}</div>
-                      </div>
-                    </li>
-                  ))}
+                  {invoice.payments.map((p) => {
+                    const pCurr = p.currency || curr;
+                    const showInr = pCurr !== "INR" && p.inrEquivalent && p.exchangeRate;
+                    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", INR: "₹" };
+                    const sym = symbols[pCurr] || pCurr;
+                    return (
+                      <li key={p.id} className="flex items-start justify-between border-b pb-2 last:border-0">
+                        <div>
+                          <div className="font-medium">{formatMoney(p.amount, pCurr)}</div>
+                          {showInr && (
+                            <div className="text-xs text-muted-foreground">
+                              {formatMoney(p.inrEquivalent!, "INR")} @ ₹{p.exchangeRate!.toFixed(2)}/{sym}
+                            </div>
+                          )}
+                          <div className="text-xs text-muted-foreground">{formatDate(p.date)} · {p.mode.replace("_", " ")}{p.reference ? ` · ${p.reference}` : ""}</div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </CardContent>

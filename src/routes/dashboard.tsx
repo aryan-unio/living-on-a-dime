@@ -51,8 +51,10 @@ function Dashboard() {
       inv.payments.forEach((p) => {
         const pd = new Date(p.date);
         if (pd >= monthStart) {
-          paidThisMonth += p.amount;
-          paidCurrencies.add(invCurrency);
+          const pCurr = p.currency || invCurrency;
+          const inrValue = pCurr === "INR" ? p.amount : (p.inrEquivalent ?? p.amount);
+          paidThisMonth += inrValue;
+          paidCurrencies.add("INR");
         }
       });
       if (status === "paid") {

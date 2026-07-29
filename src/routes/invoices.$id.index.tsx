@@ -246,6 +246,7 @@ function InvoiceDetail() {
         open={payOpen}
         onOpenChange={setPayOpen}
         max={totals.balance}
+        currency={curr}
         onRecord={(p) => {
           const updated = { ...invoice, payments: [...invoice.payments, p] };
           const newStatus = deriveStatus(updated, company, customer);

@@ -103,7 +103,7 @@ function NewExpense() {
 
     store.upsertExpense({
       id: uid("exp"),
-      date: new Date(date).toISOString(),
+      date: date,
       category, vendor, amount, taxRate, paidThrough,
       customerId: customerId || undefined,
       billable,

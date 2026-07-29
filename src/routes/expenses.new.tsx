@@ -27,7 +27,7 @@ const MAX_SIZE = 5 * 1024 * 1024;
 function NewExpense() {
   const navigate = useNavigate();
   const customers = useStore(() => store.getCustomers());
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; });
   const [category, setCategory] = useState("Travel");
   const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState(0);

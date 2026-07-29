@@ -182,7 +182,7 @@ export function InvoiceEditor({
                 <Input
                   type="date"
                   value={inv.date.slice(0, 10)}
-                  onChange={(e) => setInv({ ...inv, date: new Date(e.target.value).toISOString() })}
+                  onChange={(e) => setInv({ ...inv, date: e.target.value })}
                 />
               </div>
               <div>
@@ -190,7 +190,7 @@ export function InvoiceEditor({
                 <Input
                   type="date"
                   value={inv.dueDate.slice(0, 10)}
-                  onChange={(e) => setInv({ ...inv, dueDate: new Date(e.target.value).toISOString() })}
+                  onChange={(e) => setInv({ ...inv, dueDate: e.target.value })}
                 />
               </div>
               <div className="md:col-span-2">

@@ -216,14 +216,25 @@ function InvoiceDetail() {
                 <p className="text-sm text-muted-foreground">No payments recorded.</p>
               ) : (
                 <ul className="space-y-2 text-sm">
-                  {invoice.payments.map((p) => (
-                    <li key={p.id} className="flex items-start justify-between border-b pb-2 last:border-0">
-                      <div>
-                        <div className="font-medium">{formatMoney(p.amount, curr)}</div>
-                        <div className="text-xs text-muted-foreground">{formatDate(p.date)} · {p.mode.replace("_", " ")}{p.reference ? ` · ${p.reference}` : ""}</div>
-                      </div>
-                    </li>
-                  ))}
+                  {invoice.payments.map((p) => {
+                    const pCurr = p.currency || curr;
+                    const showInr = pCurr !== "INR" && p.inrEquivalent && p.exchangeRate;
+                    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", INR: "₹" };
+                    const sym = symbols[pCurr] || pCurr;
+                    return (
+                      <li key={p.id} className="flex items-start justify-between border-b pb-2 last:border-0">
+                        <div>
+                          <div className="font-medium">{formatMoney(p.amount, pCurr)}</div>
+                          {showInr && (
+                            <div className="text-xs text-muted-foreground">
+                              {formatMoney(p.inrEquivalent!, "INR")} @ ₹{p.exchangeRate!.toFixed(2)}/{sym}
+                            </div>
+                          )}
+                          <div className="text-xs text-muted-foreground">{formatDate(p.date)} · {p.mode.replace("_", " ")}{p.reference ? ` · ${p.reference}` : ""}</div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </CardContent>
@@ -235,6 +246,7 @@ function InvoiceDetail() {
         open={payOpen}
         onOpenChange={setPayOpen}
         max={totals.balance}
+        currency={curr}
         onRecord={(p) => {
           const updated = { ...invoice, payments: [...invoice.payments, p] };
           const newStatus = deriveStatus(updated, company, customer);
@@ -256,19 +268,43 @@ function InvoiceDetail() {
 }
 
 function PaymentDialog({
-  open, onOpenChange, max, onRecord,
+  open, onOpenChange, max, currency, onRecord,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   max: number;
+  currency: string;
   onRecord: (p: Payment) => void;
 }) {
   const [amount, setAmount] = useState(max);
   const [mode, setMode] = useState<PaymentMode>("bank_transfer");
   const [reference, setReference] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [rate, setRate] = useState<number>(0);
+  const [rateLoading, setRateLoading] = useState(false);
 
-  useEffect(() => { if (open) { setAmount(max); setReference(""); setDate(new Date().toISOString().slice(0, 10)); } }, [open, max]);
+  const isForeign = currency !== "INR";
+  const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", INR: "₹" };
+  const sym = symbols[currency] || currency;
+
+  useEffect(() => {
+    if (!open) return;
+    setAmount(max);
+    setReference("");
+    setDate(new Date().toISOString().slice(0, 10));
+    if (isForeign) {
+      setRateLoading(true);
+      fetch(`https://api.exchangerate-api.com/v4/latest/${currency}`)
+        .then((r) => r.json())
+        .then((d) => { if (d?.rates?.INR) setRate(Number(d.rates.INR)); })
+        .catch(() => { /* user can enter manually */ })
+        .finally(() => setRateLoading(false));
+    } else {
+      setRate(0);
+    }
+  }, [open, max, currency, isForeign]);
+
+  const inrEquivalent = isForeign ? amount * rate : amount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -279,7 +315,7 @@ function PaymentDialog({
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="pay-amount">Amount</Label>
+              <Label htmlFor="pay-amount">Amount ({sym})</Label>
               <Input id="pay-amount" type="number" step="0.01" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} />
             </div>
             <div>
@@ -287,6 +323,27 @@ function PaymentDialog({
               <Input id="pay-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
+          {isForeign && (
+            <div>
+              <Label htmlFor="pay-rate">Exchange Rate</Label>
+              <Input
+                id="pay-rate"
+                type="number"
+                step="0.0001"
+                value={rate || ""}
+                placeholder={rateLoading ? "Fetching live rate..." : "e.g. 84.50"}
+                onChange={(e) => setRate(parseFloat(e.target.value) || 0)}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                1 {currency} = ₹ {rate ? rate.toFixed(4) : "—"}
+              </p>
+              {rate > 0 && amount > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  = ₹{inrEquivalent.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                </p>
+              )}
+            </div>
+          )}
           <div>
             <Label>Payment Mode</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
@@ -316,8 +373,10 @@ function PaymentDialog({
               mode,
               reference,
               date: new Date(date).toISOString(),
+              currency: currency as Payment["currency"],
+              ...(isForeign ? { exchangeRate: rate, inrEquivalent } : {}),
             })}
-            disabled={amount <= 0}
+            disabled={amount <= 0 || (isForeign && rate <= 0)}
           >
             Record
           </Button>

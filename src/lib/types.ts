@@ -73,6 +73,9 @@ export interface Payment {
   mode: PaymentMode;
   reference: string;
   notes?: string;
+  currency?: Currency;
+  exchangeRate?: number;
+  inrEquivalent?: number;
 }
 
 export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "partial" | "void";

@@ -297,7 +297,7 @@ function Dashboard() {
             {data.topCustomers.length === 0 && (
               <p className="text-sm text-muted-foreground">No paid invoices yet.</p>
             )}
-            {data.topCustomers.map(({ customer, total, currency }) => (
+            {data.topCustomers.map(({ customer, totalINR }) => (
               <Link
                 key={customer!.id}
                 to="/customers/$id"
@@ -313,7 +313,7 @@ function Dashboard() {
                     <div className="truncate text-xs text-muted-foreground">{customer!.companyName || customer!.email}</div>
                   </div>
                 </div>
-                <div className="text-sm font-semibold text-foreground">{formatMoney(total, currency)}</div>
+                <div className="text-sm font-semibold text-foreground">{formatMoney(totalINR, "INR")}</div>
               </Link>
             ))}
 

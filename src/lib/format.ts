@@ -51,20 +51,30 @@ export function formatNumber(n: number | undefined | null): string {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(v);
 }
 
-export function formatDate(d: string | Date | undefined): string {
-  if (!d) return "—";
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function ymdParts(d: string | Date | undefined): [string, string, string] | null {
+  if (!d) return null;
   try {
-    const date = typeof d === "string" ? parseISO(d) : d;
-    return format(date, "dd MMM yyyy");
-  } catch { return "—"; }
+    const s = typeof d === "string" ? d.slice(0, 10) : format(d, "yyyy-MM-dd");
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return null;
+    return [m[1], m[2], m[3]];
+  } catch { return null; }
+}
+
+export function formatDate(d: string | Date | undefined): string {
+  const p = ymdParts(d);
+  if (!p) return "—";
+  const [y, m, day] = p;
+  return `${day} ${MONTHS[+m - 1]} ${y}`;
 }
 
 export function formatDateShort(d: string | Date | undefined): string {
-  if (!d) return "—";
-  try {
-    const date = typeof d === "string" ? parseISO(d) : d;
-    return format(date, "dd MMM");
-  } catch { return "—"; }
+  const p = ymdParts(d);
+  if (!p) return "—";
+  const [, m, day] = p;
+  return `${day} ${MONTHS[+m - 1]}`;
 }
 
 export function relativeDate(d: string | Date | undefined): string {

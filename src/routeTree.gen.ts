@@ -15,6 +15,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RecurringRouteImport } from './routes/recurring'
 import { Route as QuotesRouteImport } from './routes/quotes'
+import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as ItemsRouteImport } from './routes/items'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as ExpensesRouteImport } from './routes/expenses'
@@ -72,6 +73,11 @@ const RecurringRoute = RecurringRouteImport.update({
 const QuotesRoute = QuotesRouteImport.update({
   id: '/quotes',
   path: '/quotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayrollRoute = PayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItemsRoute = ItemsRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/expenses': typeof ExpensesRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/items': typeof ItemsRoute
+  '/payroll': typeof PayrollRoute
   '/quotes': typeof QuotesRouteWithChildren
   '/recurring': typeof RecurringRoute
   '/reports': typeof ReportsRouteWithChildren
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/items': typeof ItemsRoute
+  '/payroll': typeof PayrollRoute
   '/recurring': typeof RecurringRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/expenses': typeof ExpensesRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/items': typeof ItemsRoute
+  '/payroll': typeof PayrollRoute
   '/quotes': typeof QuotesRouteWithChildren
   '/recurring': typeof RecurringRoute
   '/reports': typeof ReportsRouteWithChildren
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/invoices'
     | '/items'
+    | '/payroll'
     | '/quotes'
     | '/recurring'
     | '/reports'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/items'
+    | '/payroll'
     | '/recurring'
     | '/reset-password'
     | '/settings'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/invoices'
     | '/items'
+    | '/payroll'
     | '/quotes'
     | '/recurring'
     | '/reports'
@@ -434,6 +446,7 @@ export interface RootRouteChildren {
   ExpensesRoute: typeof ExpensesRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
   ItemsRoute: typeof ItemsRoute
+  PayrollRoute: typeof PayrollRoute
   QuotesRoute: typeof QuotesRouteWithChildren
   RecurringRoute: typeof RecurringRoute
   ReportsRoute: typeof ReportsRouteWithChildren
@@ -484,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/quotes'
       fullPath: '/quotes'
       preLoaderRoute: typeof QuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payroll': {
+      id: '/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof PayrollRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/items': {
@@ -783,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExpensesRoute: ExpensesRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
   ItemsRoute: ItemsRoute,
+  PayrollRoute: PayrollRoute,
   QuotesRoute: QuotesRouteWithChildren,
   RecurringRoute: RecurringRoute,
   ReportsRoute: ReportsRouteWithChildren,

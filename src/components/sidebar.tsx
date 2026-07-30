@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, FileText, Receipt, RefreshCw,
-  Users, Package, Clock, Wallet, BarChart2, Settings,
+  Users, Package, Clock, Wallet, BarChart2, Settings, BadgeIndianRupee,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,9 @@ const TOP = [
   { to: "/invoices", label: "Invoices", icon: Receipt },
   { to: "/recurring", label: "Recurring Invoices", icon: RefreshCw },
   { to: "/customers", label: "Customers", icon: Users },
+  { to: "/payroll", label: "Payroll", icon: BadgeIndianRupee },
   { to: "/items", label: "Items", icon: Package },
+
 ] as const;
 
 const BOTTOM = [

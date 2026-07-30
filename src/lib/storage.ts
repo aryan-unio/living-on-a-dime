@@ -7,6 +7,8 @@ import type {
   Project,
   Quote,
   Settings,
+  Employee,
+  PayrollPayment,
 } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -275,6 +277,21 @@ export const store = {
   setProjects: (v: Project[]) => {
     cache.projects = v;
     emit();
+  },
+
+  // ---- Payroll (persisted inside the settings row) ----
+  getEmployees: (): Employee[] => cache.settings.employees ?? [],
+  getPayrollPayments: (): PayrollPayment[] => cache.settings.payrollPayments ?? [],
+  savePayroll: (employees: Employee[], payments: PayrollPayment[]) => {
+    const next: Settings = { ...cache.settings, employees, payrollPayments: payments };
+    cache.settings = next;
+    emit();
+    fireAndForget(
+      supabase.from("settings").upsert(
+        { user_id: requireUser(), data: toJson(next), updated_at: new Date().toISOString() },
+        { onConflict: "user_id" },
+      ),
+    );
   },
 
   getSettings: (): Settings => cache.settings,

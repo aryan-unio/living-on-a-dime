@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, FileText, Receipt, RefreshCw,
-  Users, Package, Clock, Wallet, BarChart2, Settings,
+  Users, Package, Clock, Wallet, BarChart2, Settings, BadgeIndianRupee,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

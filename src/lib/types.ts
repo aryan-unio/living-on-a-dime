@@ -167,3 +167,21 @@ export interface Settings {
   sidebarCollapsed?: boolean;
   locale?: string;
 }
+
+export interface Employee {
+  id: string;
+  name: string;
+  salary: number;
+  autoPay: boolean;
+  payDay: number; // 1-31
+}
+
+export interface PayrollPayment {
+  id: string;
+  employeeId: string;
+  month: string;   // "YYYY-MM"
+  amount: number;
+  datePaid: string; // "YYYY-MM-DD"
+  expenseId: string;
+  status: "paid";
+}

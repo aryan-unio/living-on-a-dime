@@ -165,6 +165,8 @@ export interface Settings {
   theme: "light" | "dark";
   reminderRules: Record<string, unknown>;
   sidebarCollapsed?: boolean;
+  employees?: Employee[];
+  payrollPayments?: PayrollPayment[];
   locale?: string;
 }
 

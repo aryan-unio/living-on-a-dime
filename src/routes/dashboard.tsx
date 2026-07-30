@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  IndianRupee, AlertTriangle, Receipt, ArrowUpRight, Wallet,
+  IndianRupee, AlertTriangle, Receipt, ArrowUpRight, Wallet, BadgeIndianRupee,
 } from "lucide-react";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { useStore } from "@/hooks/use-store";
 import { store } from "@/lib/storage";
 import { computeInvoiceTotals, deriveStatus } from "@/lib/calc";
 import { formatMoney, formatMoneyShort, formatDate } from "@/lib/format";
+import { isPaidFor, monthKey } from "@/lib/payroll";
 
 const FALLBACK_RATES: Record<string, number> = { INR: 1, USD: 84, EUR: 90, GBP: 107 };
 function toINR(amount: number, currency: string | undefined, rate?: number): number {
@@ -35,6 +36,17 @@ function Dashboard() {
   const customers = useStore(() => store.getCustomers());
   const expenses = useStore(() => store.getExpenses());
   const company = useStore(() => store.getCompany());
+  const employees = useStore(() => store.getEmployees());
+  const payrollPayments = useStore(() => store.getPayrollPayments());
+
+  const payroll = useMemo(() => {
+    const month = monthKey();
+    const paidThisMonth = payrollPayments
+      .filter((p) => p.month === month)
+      .reduce((s, p) => s + p.amount, 0);
+    const pending = employees.filter((e) => !isPaidFor(e.id, month)).length;
+    return { paidThisMonth, pending };
+  }, [employees, payrollPayments]);
 
   const data = useMemo(() => {
     let outstandingINR = 0, overdueINR = 0, paidThisMonthINR = 0, totalExpensesINR = 0;
@@ -138,7 +150,7 @@ function Dashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <KpiCard
           label="Total Outstanding"
           value={formatMoneyShort(data.outstandingINR, "INR")}
@@ -177,6 +189,15 @@ function Dashboard() {
           icon={<Wallet size={18} />}
           tone="info"
           to="/expenses"
+        />
+        <KpiCard
+          label="This Month's Payroll"
+          value={formatMoneyShort(payroll.paidThisMonth, "INR")}
+          fullValue={formatMoney(payroll.paidThisMonth, "INR")}
+          hint={`Pending: ${payroll.pending} employee${payroll.pending === 1 ? "" : "s"}`}
+          icon={<BadgeIndianRupee size={18} />}
+          tone="brand"
+          to="/payroll"
         />
       </div>
 

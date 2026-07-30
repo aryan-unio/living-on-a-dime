@@ -41,11 +41,11 @@ function Dashboard() {
 
   const payroll = useMemo(() => {
     const month = monthKey();
-    const paidThisMonth = payrollPayments
-      .filter((p) => p.month === month)
-      .reduce((s, p) => s + p.amount, 0);
-    const pending = employees.filter((e) => !isPaidFor(e.id, month)).length;
-    return { paidThisMonth, pending };
+    const monthPayments = payrollPayments.filter((p) => p.month === month);
+    const paidThisMonth = monthPayments.reduce((s, p) => s + p.amount, 0);
+    const unpaid = employees.filter((e) => !monthPayments.some((p) => p.employeeId === e.id));
+    const totalThisMonth = paidThisMonth + unpaid.reduce((s, e) => s + (e.salary || 0), 0);
+    return { paidThisMonth, totalThisMonth, pending: unpaid.length };
   }, [employees, payrollPayments]);
 
   const data = useMemo(() => {
@@ -192,8 +192,8 @@ function Dashboard() {
         />
         <KpiCard
           label="This Month's Payroll"
-          value={formatMoneyShort(payroll.paidThisMonth, "INR")}
-          fullValue={formatMoney(payroll.paidThisMonth, "INR")}
+          value={formatMoneyShort(payroll.totalThisMonth, "INR")}
+          fullValue={formatMoney(payroll.totalThisMonth, "INR")}
           hint={`Pending: ${payroll.pending} employee${payroll.pending === 1 ? "" : "s"}`}
           icon={<BadgeIndianRupee size={18} />}
           tone="brand"

@@ -27,8 +27,10 @@ export function isPaidFor(employeeId: string, month: string): boolean {
 export function markSalaryPaid(emp: Employee, date: string, month = monthKey(new Date(date))): boolean {
   if (isPaidFor(emp.id, month)) return false;
 
+  const paymentId = uid("pay");
   const expense: Expense = {
     id: uid("exp"),
+    payrollPaymentId: paymentId,
     date,
     category: "Salary",
     vendor: emp.name,
@@ -42,7 +44,7 @@ export function markSalaryPaid(emp: Employee, date: string, month = monthKey(new
   store.upsertExpense(expense);
 
   const payment: PayrollPayment = {
-    id: uid("pay"),
+    id: paymentId,
     employeeId: emp.id,
     month,
     amount: emp.salary,
@@ -52,6 +54,29 @@ export function markSalaryPaid(emp: Employee, date: string, month = monthKey(new
   };
   store.savePayroll(store.getEmployees(), [...store.getPayrollPayments(), payment]);
   return true;
+}
+
+/** Updates a payroll payment amount/date and keeps its Salary expense in sync. */
+export function updatePayrollPayment(paymentId: string, patch: { amount?: number; datePaid?: string }) {
+  const payments = store.getPayrollPayments();
+  const payment = payments.find((p) => p.id === paymentId);
+  if (!payment) return;
+  const next = { ...payment, ...patch };
+  const expense = store.getExpenses().find((e) => e.id === payment.expenseId || e.payrollPaymentId === paymentId);
+  if (expense) {
+    store.upsertExpense({ ...expense, amount: next.amount, date: next.datePaid });
+  }
+  store.savePayroll(store.getEmployees(), payments.map((p) => (p.id === paymentId ? next : p)));
+}
+
+/** Deletes a payroll payment and its linked Salary expense. */
+export function deletePayrollPayment(paymentId: string) {
+  const payments = store.getPayrollPayments();
+  const payment = payments.find((p) => p.id === paymentId);
+  if (!payment) return;
+  const expense = store.getExpenses().find((e) => e.id === payment.expenseId || e.payrollPaymentId === paymentId);
+  if (expense) store.deleteExpense(expense.id);
+  store.savePayroll(store.getEmployees(), payments.filter((p) => p.id !== paymentId));
 }
 
 /** Runs due auto-pay salaries for the current month. Returns how many were paid. */

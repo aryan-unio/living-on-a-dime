@@ -151,6 +151,7 @@ export interface Expense {
   receiptType?: string;
   billNumber?: string;
   billDate?: string;
+  payrollPaymentId?: string;
 }
 
 export interface Project {

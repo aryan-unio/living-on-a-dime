@@ -19,6 +19,7 @@ import type { Employee } from "@/lib/types";
 import {
   deleteEmployee, isPaidFor, markSalaryPaid, monthKey, monthLabel, runAutoPay, ymd,
 } from "@/lib/payroll";
+import { deletePayrollPayment } from "@/lib/payroll";
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -248,7 +249,20 @@ function Payroll() {
                     <td className="px-3 py-2 text-right">{formatMoney(p.amount, "INR")}</td>
                     <td className="px-3 py-2 text-muted-foreground">{formatDate(p.datePaid)}</td>
                     <td className="px-3 py-2">
-                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Paid</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Paid</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => {
+                            deletePayrollPayment(p.id);
+                            toast.success("Payment and linked expense removed");
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

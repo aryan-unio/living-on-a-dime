@@ -41,12 +41,11 @@ function Dashboard() {
 
   const payroll = useMemo(() => {
     const month = monthKey();
-    const monthPayments = payrollPayments.filter((p) => p.month === month);
+    const monthPayments = payrollPayments.filter((p) => p.month === month && p.status === "paid");
     const paidThisMonth = monthPayments.reduce((s, p) => s + p.amount, 0);
-    const unpaid = employees.filter((e) => !monthPayments.some((p) => p.employeeId === e.id));
-    const totalThisMonth = paidThisMonth + unpaid.reduce((s, e) => s + (e.salary || 0), 0);
-    return { paidThisMonth, totalThisMonth, pending: unpaid.length };
-  }, [employees, payrollPayments]);
+    const employeesPaid = new Set(monthPayments.map((p) => p.employeeId)).size;
+    return { paidThisMonth, employeesPaid };
+  }, [payrollPayments]);
 
   const data = useMemo(() => {
     let outstandingINR = 0, overdueINR = 0, paidThisMonthINR = 0, totalExpensesINR = 0;
@@ -150,7 +149,7 @@ function Dashboard() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Total Outstanding"
           value={formatMoneyShort(data.outstandingINR, "INR")}
@@ -182,21 +181,12 @@ function Dashboard() {
           search={{ status: "paid", period: "this_month" }}
         />
         <KpiCard
-          label="Total Expenses"
-          value={formatMoneyShort(data.totalExpensesINR, "INR")}
-          fullValue={formatMoney(data.totalExpensesINR, "INR")}
-          hint="All time"
-          icon={<Wallet size={18} />}
-          tone="info"
-          to="/expenses"
-        />
-        <KpiCard
           label="This Month's Payroll"
-          value={formatMoneyShort(payroll.totalThisMonth, "INR")}
-          fullValue={formatMoney(payroll.totalThisMonth, "INR")}
-          hint={`Pending: ${payroll.pending} employee${payroll.pending === 1 ? "" : "s"}`}
+          value={formatMoneyShort(payroll.paidThisMonth, "INR")}
+          fullValue={formatMoney(payroll.paidThisMonth, "INR")}
+          hint={`${payroll.employeesPaid} employee${payroll.employeesPaid === 1 ? "" : "s"} paid`}
           icon={<BadgeIndianRupee size={18} />}
-          tone="brand"
+          tone="info"
           to="/payroll"
         />
       </div>

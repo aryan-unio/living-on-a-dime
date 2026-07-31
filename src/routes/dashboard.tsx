@@ -36,7 +36,7 @@ function Dashboard() {
   const customers = useStore(() => store.getCustomers());
   const expenses = useStore(() => store.getExpenses());
   const company = useStore(() => store.getCompany());
-  const employees = useStore(() => store.getEmployees());
+  
   const payrollPayments = useStore(() => store.getPayrollPayments());
 
   const payroll = useMemo(() => {

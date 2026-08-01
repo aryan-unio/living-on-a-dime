@@ -6,7 +6,8 @@ import {
 import {
   IndianRupee, AlertTriangle, Receipt, ArrowUpRight, Wallet, BadgeIndianRupee,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -91,28 +92,8 @@ function Dashboard() {
 
     expenses.forEach((e) => { totalExpensesINR += e.amount; });
 
-    // 6 month revenue series (in INR)
     const months: { name: string; revenue: number; expenses: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const name = d.toLocaleString("en-IN", { month: "short" });
-      let revenue = 0;
-      invoices.forEach((inv) => {
-        const invCurrency = inv.currency || company.currency;
-        inv.payments.forEach((p) => {
-          const pd = new Date(p.date);
-          if (pd >= d && pd < next) {
-            const pCurr = p.currency || invCurrency;
-            revenue += p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
-          }
-        });
-      });
-      const exp = expenses
-        .filter((e) => { const ed = new Date(e.date); return ed >= d && ed < next; })
-        .reduce((s, e) => s + e.amount, 0);
-      months.push({ name, revenue, expenses: exp });
-    }
+
 
     const topCustomers = Object.entries(customerRevenue)
       .map(([id, v]) => ({ customer: customers.find((c) => c.id === id), totalINR: v.totalINR }))
@@ -129,6 +110,53 @@ function Dashboard() {
       statusCounts, months, topCustomers, recent,
     };
   }, [invoices, customers, expenses, company]);
+
+  const [range, setRange] = useState<"3m" | "6m" | "1y" | "custom">("6m");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [applied, setApplied] = useState<{ from: string; to: string } | null>(null);
+
+  const chartData = useMemo(() => {
+    const now = new Date();
+    let start: Date, end: Date;
+    if (range === "custom" && applied?.from && applied?.to) {
+      const [fy, fm] = applied.from.split("-").map(Number);
+      const [ty, tm] = applied.to.split("-").map(Number);
+      start = new Date(fy, fm - 1, 1);
+      end = new Date(ty, tm, 1);
+    } else {
+      const count = range === "3m" ? 3 : range === "1y" ? 12 : 6;
+      start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+    const out: { name: string; revenue: number; expenses: number }[] = [];
+    const cursor = new Date(start);
+    while (cursor < end && out.length < 60) {
+      const d = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      const next = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+      const name = d.toLocaleString("en-IN", { month: "short", year: "2-digit" });
+      let revenue = 0;
+      invoices.forEach((inv) => {
+        const invCurrency = inv.currency || company.currency;
+        inv.payments.forEach((p) => {
+          const pd = new Date(p.date);
+          if (pd >= d && pd < next) {
+            const pCurr = p.currency || invCurrency;
+            revenue += p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
+          }
+        });
+      });
+      const exp = expenses
+        .filter((e) => { const ed = new Date(e.date); return ed >= d && ed < next; })
+        .reduce((s, e) => s + e.amount, 0);
+      out.push({ name, revenue, expenses: exp });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return out;
+  }, [invoices, expenses, company, range, applied]);
+
+  const rangeLabel = range === "3m" ? "3 months" : range === "1y" ? "12 months" : range === "custom" ? "custom range" : "6 months";
+
 
   const statusData = Object.entries(data.statusCounts).map(([name, value]) => ({ name, value }));
   const COLORS: Record<string, string> = {
@@ -172,14 +200,15 @@ function Dashboard() {
         />
         <KpiCard
           label="Paid this Month"
-          value={formatMoneyShort(data.paidThisMonthINR, "INR")}
-          fullValue={formatMoney(data.paidThisMonthINR, "INR")}
-          hint="Converted to INR"
+          value={formatMoneyShort(data.paidThisMonthINR + payroll.paidThisMonth, "INR")}
+          fullValue={formatMoney(data.paidThisMonthINR + payroll.paidThisMonth, "INR")}
+          hint={`${formatMoneyShort(data.paidThisMonthINR, "INR")} invoices · ${formatMoneyShort(payroll.paidThisMonth, "INR")} payroll`}
           icon={<Wallet size={18} />}
           tone="success"
           to="/invoices"
           search={{ status: "paid", period: "this_month" }}
         />
+
         <KpiCard
           label="This Month's Payroll"
           value={formatMoneyShort(payroll.paidThisMonth, "INR")}
@@ -196,13 +225,50 @@ function Dashboard() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Revenue vs Expenses (6 months)</CardTitle>
+          <CardHeader className="gap-3">
+            <CardTitle className="text-base font-semibold">Revenue vs Expenses ({rangeLabel})</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              {([["3m", "3 Months"], ["6m", "6 Months"], ["1y", "1 Year"], ["custom", "Custom"]] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setRange(key)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    range === key
+                      ? "border-transparent bg-[var(--brand)] text-white"
+                      : "border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {range === "custom" && (
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="text-xs text-muted-foreground">
+                  From
+                  <Input type="month" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="mt-1 h-8 w-40" />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  To
+                  <Input type="month" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="mt-1 h-8 w-40" />
+                </label>
+                <Button
+                  size="sm"
+                  className="h-8 bg-[var(--brand)] text-white hover:bg-[var(--brand)]/90"
+                  disabled={!customFrom || !customTo || customFrom > customTo}
+                  onClick={() => setApplied({ from: customFrom, to: customTo })}
+                >
+                  Apply
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.months}>
+                <BarChart data={chartData}>
+
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94A3B8" />
                   <YAxis
@@ -359,7 +425,7 @@ function KpiCard({
       <div className="min-w-0 flex-1">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
         <div className="mt-0.5 truncate text-lg font-semibold text-foreground" title={fullValue || value}>{value}</div>
-        {hint && <div className="text-[10px] text-muted-foreground">{hint}</div>}
+        {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
       </div>
       {to && <ArrowUpRight size={14} className="absolute bottom-2 right-2 text-slate-400" />}
     </CardContent>

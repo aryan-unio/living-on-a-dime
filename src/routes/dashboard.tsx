@@ -224,13 +224,50 @@ function Dashboard() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Revenue vs Expenses (6 months)</CardTitle>
+          <CardHeader className="gap-3">
+            <CardTitle className="text-base font-semibold">Revenue vs Expenses ({rangeLabel})</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              {([["3m", "3 Months"], ["6m", "6 Months"], ["1y", "1 Year"], ["custom", "Custom"]] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setRange(key)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    range === key
+                      ? "border-transparent bg-[var(--brand)] text-white"
+                      : "border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {range === "custom" && (
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="text-xs text-muted-foreground">
+                  From
+                  <Input type="month" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="mt-1 h-8 w-40" />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  To
+                  <Input type="month" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="mt-1 h-8 w-40" />
+                </label>
+                <Button
+                  size="sm"
+                  className="h-8 bg-[var(--brand)] text-white hover:bg-[var(--brand)]/90"
+                  disabled={!customFrom || !customTo || customFrom > customTo}
+                  onClick={() => setApplied({ from: customFrom, to: customTo })}
+                >
+                  Apply
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.months}>
+                <BarChart data={chartData}>
+
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94A3B8" />
                   <YAxis

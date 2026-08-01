@@ -1,11 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -40,6 +46,20 @@ function InvoicesList() {
   const [status, setStatus] = useState(urlSearch.status || "all");
   const [period, setPeriod] = useState(urlSearch.period || "");
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<string[]>([]);
+  const [pendingDelete, setPendingDelete] = useState<{ ids: string[]; label: string } | null>(null);
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    try {
+      pendingDelete.ids.forEach((id) => store.deleteInvoice(id));
+      setSelected((prev) => prev.filter((id) => !pendingDelete.ids.includes(id)));
+      toast.success(pendingDelete.ids.length > 1 ? `${pendingDelete.ids.length} invoices deleted` : "Invoice deleted");
+    } catch {
+      toast.error("Failed to delete invoice");
+    }
+    setPendingDelete(null);
+  };
 
   useEffect(() => {
     setStatus(urlSearch.status || "all");
@@ -124,6 +144,22 @@ function InvoicesList() {
         </div>
 
 
+        {selected.length > 0 && (
+          <div className="mt-4 flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2">
+            <span className="text-sm font-medium">{selected.length} selected</span>
+            <div className="ml-auto">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => setPendingDelete({ ids: selected, label: `${selected.length} invoices` })}
+              >
+                <Trash2 size={14} /> Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-4 overflow-x-auto">
           {rows.length === 0 ? (
             <EmptyState
@@ -140,6 +176,13 @@ function InvoicesList() {
             <table className="w-full text-sm">
               <thead className="border-y bg-muted/30 text-xs uppercase text-muted-foreground">
                 <tr>
+                  <th className="px-3 py-2 w-8">
+                    <Checkbox
+                      checked={selected.length > 0 && selected.length === rows.length}
+                      onCheckedChange={(v) => setSelected(v ? rows.map((r) => r.inv.id) : [])}
+                      aria-label="Select all invoices"
+                    />
+                  </th>
                   <th className="px-3 py-2 text-left font-medium">Number</th>
                   <th className="px-3 py-2 text-left font-medium">Customer</th>
                   <th className="px-3 py-2 text-left font-medium">Date</th>
@@ -147,11 +190,19 @@ function InvoicesList() {
                   <th className="px-3 py-2 text-left font-medium">Status</th>
                   <th className="px-3 py-2 text-right font-medium">Total</th>
                   <th className="px-3 py-2 text-right font-medium">Balance</th>
+                  <th className="px-3 py-2 w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map(({ inv, cust, totals, status: s }) => (
-                  <tr key={inv.id} className="cursor-pointer border-b last:border-0 hover:bg-muted/30" onClick={() => navigate({ to: "/invoices/$id", params: { id: inv.id } })}>
+                  <tr key={inv.id} className="group cursor-pointer border-b last:border-0 hover:bg-muted/30" onClick={() => navigate({ to: "/invoices/$id", params: { id: inv.id } })}>
+                    <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selected.includes(inv.id)}
+                        onCheckedChange={(v) => setSelected((prev) => (v ? [...prev, inv.id] : prev.filter((id) => id !== inv.id)))}
+                        aria-label={`Select ${inv.number}`}
+                      />
+                    </td>
                     <td className="px-3 py-3 font-medium text-[var(--brand)]">{inv.number}</td>
                     <td className="px-3 py-3">{cust?.displayName || "—"}<div className="text-xs text-muted-foreground">{cust?.companyName}</div></td>
                     <td className="px-3 py-3 text-muted-foreground">{formatDate(inv.date)}</td>
@@ -159,7 +210,16 @@ function InvoicesList() {
                     <td className="px-3 py-3"><StatusBadge status={s} /></td>
                     <td className="px-3 py-3 text-right font-medium">{formatMoney(totals.total, inv.currency)}</td>
                     <td className="px-3 py-3 text-right">{totals.balance > 0 ? <span className="font-medium text-[var(--danger)]">{formatMoney(totals.balance, inv.currency)}</span> : <span className="text-muted-foreground">—</span>}</td>
-
+                    <td className="px-3 py-3 text-right">
+                      <button
+                        type="button"
+                        aria-label={`Delete ${inv.number}`}
+                        className="opacity-0 transition group-hover:opacity-100 focus:opacity-100 text-red-400 hover:text-red-600"
+                        onClick={(e) => { e.stopPropagation(); setPendingDelete({ ids: [inv.id], label: inv.number }); }}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -167,6 +227,21 @@ function InvoicesList() {
           )}
         </div>
       </Card>
+
+      <AlertDialog open={pendingDelete !== null} onOpenChange={(o) => { if (!o) setPendingDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pendingDelete && pendingDelete.ids.length > 1 ? "Delete invoices?" : "Delete Invoice?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {pendingDelete?.label}. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

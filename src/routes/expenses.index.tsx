@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight, Paperclip, Plus, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -54,8 +54,8 @@ function ExpensesList() {
                   const hasNotes = Boolean(e.notes && e.notes.trim());
                   const isOpen = Boolean(expanded[e.id]);
                   return (
-                    <>
-                    <tr key={e.id} className={hasNotes ? "border-b last:border-0 cursor-pointer hover:bg-muted/30" : "border-b last:border-0"} onClick={hasNotes ? () => setExpanded((s) => ({ ...s, [e.id]: !s[e.id] })) : undefined}>
+                    <Fragment key={e.id}>
+                    <tr className={hasNotes ? "border-b last:border-0 cursor-pointer hover:bg-muted/30" : "border-b last:border-0"} onClick={hasNotes ? () => setExpanded((s) => ({ ...s, [e.id]: !s[e.id] })) : undefined}>
                       <td className="px-3 py-3 text-muted-foreground">{hasNotes ? (isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />) : null}</td>
                       <td className="px-3 py-3 text-muted-foreground">{formatDate(e.date)}</td>
                       <td className="px-3 py-3 font-medium">{e.category}</td>
@@ -81,12 +81,12 @@ function ExpensesList() {
                       <td className="px-3 py-3 text-right"><Button size="icon" variant="ghost" onClick={(ev) => { ev.stopPropagation(); store.deleteExpense(e.id); toast.success("Expense deleted"); }}><Trash2 size={14} className="text-muted-foreground" /></Button></td>
                     </tr>
                     {hasNotes && isOpen ? (
-                      <tr key={`${e.id}-notes`} className="border-b last:border-0 bg-muted/20">
+                      <tr className="border-b last:border-0 bg-muted/20">
                         <td></td>
                         <td colSpan={7} className="px-3 py-2 text-xs whitespace-pre-wrap text-muted-foreground">{e.notes}</td>
                       </tr>
                     ) : null}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>

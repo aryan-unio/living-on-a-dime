@@ -111,6 +111,53 @@ function Dashboard() {
     };
   }, [invoices, customers, expenses, company]);
 
+  const [range, setRange] = useState<"3m" | "6m" | "1y" | "custom">("6m");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [applied, setApplied] = useState<{ from: string; to: string } | null>(null);
+
+  const chartData = useMemo(() => {
+    const now = new Date();
+    let start: Date, end: Date;
+    if (range === "custom" && applied?.from && applied?.to) {
+      const [fy, fm] = applied.from.split("-").map(Number);
+      const [ty, tm] = applied.to.split("-").map(Number);
+      start = new Date(fy, fm - 1, 1);
+      end = new Date(ty, tm, 1);
+    } else {
+      const count = range === "3m" ? 3 : range === "1y" ? 12 : 6;
+      start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+    const out: { name: string; revenue: number; expenses: number }[] = [];
+    const cursor = new Date(start);
+    while (cursor < end && out.length < 60) {
+      const d = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      const next = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+      const name = d.toLocaleString("en-IN", { month: "short", year: "2-digit" });
+      let revenue = 0;
+      invoices.forEach((inv) => {
+        const invCurrency = inv.currency || company.currency;
+        inv.payments.forEach((p) => {
+          const pd = new Date(p.date);
+          if (pd >= d && pd < next) {
+            const pCurr = p.currency || invCurrency;
+            revenue += p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
+          }
+        });
+      });
+      const exp = expenses
+        .filter((e) => { const ed = new Date(e.date); return ed >= d && ed < next; })
+        .reduce((s, e) => s + e.amount, 0);
+      out.push({ name, revenue, expenses: exp });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return out;
+  }, [invoices, expenses, company, range, applied]);
+
+  const rangeLabel = range === "3m" ? "3 months" : range === "1y" ? "12 months" : range === "custom" ? "custom range" : "6 months";
+
+
   const statusData = Object.entries(data.statusCounts).map(([name, value]) => ({ name, value }));
   const COLORS: Record<string, string> = {
     draft: "#94A3B8", sent: "#2563EB", paid: "#16A34A",

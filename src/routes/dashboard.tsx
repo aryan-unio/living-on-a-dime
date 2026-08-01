@@ -425,7 +425,7 @@ function KpiCard({
       <div className="min-w-0 flex-1">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
         <div className="mt-0.5 truncate text-lg font-semibold text-foreground" title={fullValue || value}>{value}</div>
-        {hint && <div className="text-[10px] text-muted-foreground">{hint}</div>}
+        {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
       </div>
       {to && <ArrowUpRight size={14} className="absolute bottom-2 right-2 text-slate-400" />}
     </CardContent>

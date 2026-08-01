@@ -92,28 +92,8 @@ function Dashboard() {
 
     expenses.forEach((e) => { totalExpensesINR += e.amount; });
 
-    // 6 month revenue series (in INR)
     const months: { name: string; revenue: number; expenses: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const name = d.toLocaleString("en-IN", { month: "short" });
-      let revenue = 0;
-      invoices.forEach((inv) => {
-        const invCurrency = inv.currency || company.currency;
-        inv.payments.forEach((p) => {
-          const pd = new Date(p.date);
-          if (pd >= d && pd < next) {
-            const pCurr = p.currency || invCurrency;
-            revenue += p.inrEquivalent ?? toINR(p.amount, pCurr, p.exchangeRate);
-          }
-        });
-      });
-      const exp = expenses
-        .filter((e) => { const ed = new Date(e.date); return ed >= d && ed < next; })
-        .reduce((s, e) => s + e.amount, 0);
-      months.push({ name, revenue, expenses: exp });
-    }
+
 
     const topCustomers = Object.entries(customerRevenue)
       .map(([id, v]) => ({ customer: customers.find((c) => c.id === id), totalINR: v.totalINR }))

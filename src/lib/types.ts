@@ -64,7 +64,7 @@ export interface LineItem {
   hsnCode: string;
 }
 
-export type PaymentMode = "cash" | "upi" | "bank_transfer" | "card" | "cheque";
+export type PaymentMode = "cash" | "upi" | "bank_transfer" | "card" | "cheque" | "payoneer";
 
 export interface Payment {
   id: string;

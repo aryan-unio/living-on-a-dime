@@ -200,14 +200,15 @@ function Dashboard() {
         />
         <KpiCard
           label="Paid this Month"
-          value={formatMoneyShort(data.paidThisMonthINR, "INR")}
-          fullValue={formatMoney(data.paidThisMonthINR, "INR")}
-          hint="Converted to INR"
+          value={formatMoneyShort(data.paidThisMonthINR + payroll.paidThisMonth, "INR")}
+          fullValue={formatMoney(data.paidThisMonthINR + payroll.paidThisMonth, "INR")}
+          hint={`${formatMoneyShort(data.paidThisMonthINR, "INR")} invoices · ${formatMoneyShort(payroll.paidThisMonth, "INR")} payroll`}
           icon={<Wallet size={18} />}
           tone="success"
           to="/invoices"
           search={{ status: "paid", period: "this_month" }}
         />
+
         <KpiCard
           label="This Month's Payroll"
           value={formatMoneyShort(payroll.paidThisMonth, "INR")}

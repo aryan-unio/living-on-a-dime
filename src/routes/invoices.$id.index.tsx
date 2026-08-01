@@ -230,7 +230,7 @@ function InvoiceDetail() {
                               {formatMoney(p.inrEquivalent!, "INR")} @ ₹{p.exchangeRate!.toFixed(2)}/{sym}
                             </div>
                           )}
-                          <div className="text-xs text-muted-foreground">{formatDate(p.date)} · {p.mode.replace("_", " ")}{p.reference ? ` · ${p.reference}` : ""}</div>
+                          <div className="text-xs text-muted-foreground">{formatDate(p.date)} · <span className="capitalize">{p.mode.replace("_", " ")}</span>{p.reference ? ` · ${p.reference}` : ""}</div>
                         </div>
                       </li>
                     );
@@ -354,6 +354,7 @@ function PaymentDialog({
                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="cheque">Cheque</SelectItem>
+                <SelectItem value="payoneer">Payoneer</SelectItem>
               </SelectContent>
             </Select>
           </div>
